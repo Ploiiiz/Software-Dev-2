@@ -1,4 +1,17 @@
-arr = input("Array members: ").split()
+# arr = input("Array members: ").split()
+# arr = [int(i) for i in arr]
+import unittest
+class ThreeSumTestCase(unittest.TestCase):
+    def test_1(self):
+        result = ThreeSum([-3,0,3,1,2])
+        assert result == [(-3,0,3), (-3,1,2)]
+    def test_2(self):
+        result = ThreeSum([1,1,2,4,5,2])
+        assert result == []
+    def test_3(self):
+        result = ThreeSum([1,1,-2,4,5,0])
+        assert result == [(-2,1,1)]
+    
 
 def ThreeSum(arr):
     ans = []
@@ -14,10 +27,12 @@ def ThreeSum(arr):
             elif tsum > 0:
                 r -= 1
             else:
-                ans.append([num, arr[l], arr[r]])
+                ans.append((num, arr[l], arr[r]))
                 l += 1
                 while arr[l] == arr[l-1]:
                     l += 1
     return ans
 
-print(ThreeSum(arr))
+# print(ThreeSum(arr))
+if __name__ == '__main__':
+    unittest.main()
