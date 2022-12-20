@@ -25,8 +25,42 @@ class solveTest(unittest.TestCase):
                 answer = solve(h)
         assert answer == (50, 150, 20, 70, 90, 40, 130, 30)
 
-def solve(file):
-    #file = open('ex7.txt','r')
+    def test_2(self):
+        data = '''8 400 -8
+                350
+                300
+                5
+                -1
+                100
+                50
+                -9
+                4'''
+        with patch('__main__.open', mock_open(read_data=data)) as m:
+            with open('foo') as h:
+                answer = solve(h)
+        assert answer == (300,100,50,350,5,-1,4,-9)
+
+    def test_3(self):
+        data = '''12 400 8
+                16
+                6
+                100
+                9
+                20
+                300
+                -2
+                8
+                50
+                19
+                20
+                350'''
+        with patch('__main__.open', mock_open(read_data=data)) as m:
+            with open('foo') as h:
+                answer = solve(h)
+        assert answer == (300,100,50,350,-2,8,6,16)
+
+def solve(files):
+    file = open(files,'r')
     content = file.readlines()
     for i in range(len(content)):
         content[i] = content[i].strip()
@@ -35,25 +69,25 @@ def solve(file):
     n = int(line1[0])
     c1 = int(line1[1])
     c2 = int(line1[2])
-    #print(n,c1,c2)
+    # print(n,c1,c2)
 
     A = [int(i) for i in content[1:]]
     A.sort()
-    #print(A)
+    # print(A)
 
     ansc1 = []
     for i in A:
         for j in A:
             if i+j == c1:
                 ansc1.append((i,j))
-    #print(ansc1) #(x1,x2)
+    # print(ansc1) #(x1,x2)
 
     ansc2 = []
     for i in A:
         for j in A:
             if i-j == c2:
                 ansc2.append((i,j))
-    #print(ansc2) #(x8,x6)
+    # print(ansc2) #(x8,x6)
 
     ansx1 = []
     for i in ansc1:
@@ -61,7 +95,7 @@ def solve(file):
             for k in A:
                 if i[0] == j-k:
                     ansx1.append((i[0],i[1],k,j))
-    #print(ansx1) #(x1,x2,x3,x4)
+    # print(ansx1) #(x1,x2,x3,x4)
 
     ansx6 = []
     for i in ansc2:
@@ -69,7 +103,7 @@ def solve(file):
             for k in A:
                 if i[1] == j-k:
                     ansx6.append((k,i[1],j,i[0]))
-    #print(ansx6) #(x5,x6,x7,x8)
+    # print(ansx6) #(x5,x6,x7,x8)
 
     pos_ans = []
     for i in ansx1:
@@ -85,4 +119,5 @@ def solve(file):
     return pos_ans[0]
 
 if __name__ == '__main__':
+    # print(solve('test.txt'))
     unittest.main()
