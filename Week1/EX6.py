@@ -6,16 +6,21 @@ class addTenTest(unittest.TestCase):
         result = addTen()
         assert result == [3]
 
-    @patch('builtins.input', side_effect=['1', '4', '1 2 3 4', '1 2 3 4', '1 2 3 4', '1 2 3 4'])
+    @patch('builtins.input', side_effect=['1', '3', '1 2 3', '4 5 6', '7 8 9'])
     def test_2(self, input):
         result = addTen()
-        assert result == [4]
+        assert result == [0]
 
     @patch('builtins.input', side_effect=['2', '4', '1 2 3 4', '1 2 3 4', '1 2 3 4', '1 2 3 4'
                                         , '5', '2 2 2 2 2', '2 2 2 2 2', '2 2 2 2 2', '2 2 2 2 2', '2 2 2 2 2'])
     def test_3(self, input):
         result = addTen()
         assert result == [4,10]
+
+    @patch('builtins.input', side_effect=['1', '3', '6 7 2', '8 5 9' , '5 3 9'])
+    def test_4(self, input):
+        result = addTen()
+        assert result == [0]
 
 def addTen():
     panels = int(input())
@@ -50,4 +55,5 @@ def addTen():
     return countt
 
 if __name__ == '__main__':
+    # print(addTen())
     unittest.main()

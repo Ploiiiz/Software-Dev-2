@@ -38,4 +38,5 @@ def ThreeSum(arr):
 
 # print(ThreeSum(arr))
 if __name__ == '__main__':
-    unittest.main()
+    ThreeSum()
+    # unittest.main()
