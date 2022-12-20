@@ -12,7 +12,7 @@ class ThreeSumTestCase(unittest.TestCase):
         result = ThreeSum([1,1,-2,4,5,0])
         assert result == [(-2,1,1)]
     def test_4(self):
-        result = ThreeSum()
+        result = ThreeSum([])
         assert result == []
     
 
