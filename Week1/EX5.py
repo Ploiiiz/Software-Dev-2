@@ -37,6 +37,5 @@ def ThreeSum(arr):
     return ans
 
 # print(ThreeSum(arr))
-if __name__ == '__main__':
-    ThreeSum()
-    # unittest.main()
+if __name__ == '__main__':   
+    unittest.main()

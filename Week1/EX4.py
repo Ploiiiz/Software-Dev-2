@@ -12,8 +12,8 @@ class DuplicateTest(unittest.TestCase):
         result = checkDuplicates([-1,2,5,-2,-1,2])
         assert result == [-1,2]
     def test_0(self):
-        result = checkDuplicates()
-        assert result == []
+        result = checkDuplicates([])
+        assert result == False
 
 
 def checkDuplicates(arr):
@@ -28,4 +28,5 @@ def checkDuplicates(arr):
 
 # print(checkDuplicates(arr))
 if __name__ == "__main__":
+    # print(checkDuplicates([-1,1,3,5,0]))
     unittest.main()
