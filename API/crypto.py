@@ -1,3 +1,5 @@
+# Alpha Vantage
+
 from alpha_vantage.cryptocurrencies import CryptoCurrencies
 import matplotlib.pyplot as plt
 
