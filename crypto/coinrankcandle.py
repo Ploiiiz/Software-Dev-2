@@ -8,6 +8,15 @@ import datetime
 
 import sqlite3
 
+import searchdata
+from searchdata import search
+import coinrankingLine
+from coinrankingLine import line
+
+
+a = input('Symbol: ')
+uuid = search(a)
+
 # Connect to the database
 conn = sqlite3.connect("coinranking.db")
 
@@ -15,13 +24,14 @@ conn = sqlite3.connect("coinranking.db")
 cursor = conn.cursor()
 # Set the API key in the request header
 headers = {
-	"X-RapidAPI-Key": "7743c81996msh2ad1ff32ce0021ap1d042djsn21d3138a2fb0",
-	"X-RapidAPI-Host": "coinranking1.p.rapidapi.com"
+    "X-RapidAPI-Key": "7743c81996msh2ad1ff32ce0021ap1d042djsn21d3138a2fb0",
+    "X-RapidAPI-Host": "coinranking1.p.rapidapi.com"
 }
 
 # Make a request to the Coinranking API
-url = "https://coinranking1.p.rapidapi.com/coin/Qwsogvtv82FCd/ohlc"
-params = {"referenceCurrencyUuid":"yhjMzLPhuIDl","interval":"month", "limit":"100"}
+url = "https://coinranking1.p.rapidapi.com/coin/" + uuid + "/ohlc"
+# url = "https://coinranking1.p.rapidapi.com/coin/Qwsogvtv82FCd/ohlc"
+params = {"referenceCurrencyUuid":"yhjMzLPhuIDl","interval":"day", "limit":"100"}
 response = requests.get(url, params=params, headers=headers)
 
 
@@ -39,7 +49,7 @@ data = json.loads(response.text)
 
 df = pd.DataFrame(data["data"]["ohlc"])
 df["startingAt"] = df["startingAt"].apply(lambda x: datetime.datetime.fromtimestamp(x))
-  
+    
 # print(df)
 # Save the DataFrame to a table in the database
 
@@ -67,3 +77,5 @@ fig = go.Figure(candlestick)
 fig.show()
 
 conn.close()
+line(uuid)
+
