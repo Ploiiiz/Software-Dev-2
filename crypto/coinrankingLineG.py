@@ -4,6 +4,15 @@ import plotly.graph_objects as go
 import json
 import datetime
 import plotly.express as px
+
+import sqlite3
+
+# Connect to the database
+conn = sqlite3.connect("coinranking.db")
+
+# Create a cursor
+cursor = conn.cursor()
+
 # Set the API key in the request header
 headers = {
 	"X-RapidAPI-Key": "7743c81996msh2ad1ff32ce0021ap1d042djsn21d3138a2fb0",
@@ -30,11 +39,22 @@ df = pd.DataFrame(data["data"]["history"])
 df['timestamp']= df['timestamp'].apply(lambda x: datetime.datetime.fromtimestamp(x))
 df.to_excel('coinrankingline.xlsx', sheet_name='line', index=True)
 
+df.to_sql("coinrankingline", conn, if_exists="replace")
 
 # Create a line chart
+
+
 cryt = pd.read_excel('coinrankingline.xlsx')
-fug = px.line(data_frame=cryt ,x = 'timestamp',y = 'price')
+
+fig = px.line(data_frame=cryt,x = 'timestamp',y = 'price')
 
 # Create the figure and show the plot
 
-fug.show()
+fig.show()
+
+# Commit the changes to the database
+conn.commit()
+
+# Close the connection
+conn.close()
+

@@ -61,9 +61,9 @@ def get_data():
         print("Error: Could not retrieve data from Coinranking API")
         exit()
     
-    return response
+    return (response.status_code,response.text)
 
-def make_data(response):
+def make_data():
     get_data()
     data = json.loads(response.text)
     df = pd.DataFrame(data["data"]["history"])
@@ -76,7 +76,7 @@ def make_data(response):
 
     return df
 
-def plot(fig):
+def plot():
     make_data()    
     # Create a line chart
     cryt = pd.read_excel('coinrankingline.xlsx')
