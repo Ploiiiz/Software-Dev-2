@@ -13,7 +13,7 @@ headers = {
 
 # Make a request to the Coinranking API
 url = "https://coinranking1.p.rapidapi.com/coin/Qwsogvtv82FCd/history"
-params = {"referenceCurrencyUuid":"yhjMzLPhuIDl","timePeriod":"1y"}
+params = {"referenceCurrencyUuid":"yhjMzLPhuIDl","timePeriod":"24h"}
 response = requests.get(url, params=params, headers=headers)
 
 # Check the status code of the response
