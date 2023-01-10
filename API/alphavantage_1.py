@@ -82,5 +82,6 @@ def getFullDailyData(symbol):
     return response
 
 
+
 if __name__ == "__main__":
     unittest.main()
