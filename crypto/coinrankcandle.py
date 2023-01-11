@@ -12,6 +12,7 @@ import searchdata
 from searchdata import search
 import coinrankingLine
 from coinrankingLine import line
+from coinranking import data
 
 
 a = input('Symbol: ')
@@ -31,7 +32,7 @@ headers = {
 # Make a request to the Coinranking API
 url = "https://coinranking1.p.rapidapi.com/coin/" + uuid + "/ohlc"
 # url = "https://coinranking1.p.rapidapi.com/coin/Qwsogvtv82FCd/ohlc"
-params = {"referenceCurrencyUuid":"yhjMzLPhuIDl","interval":"day", "limit":"100"}
+params = {"referenceCurrencyUuid":"yhjMzLPhuIDl","interval":"hour", "limit":"100"}
 response = requests.get(url, params=params, headers=headers)
 
 

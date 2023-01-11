@@ -1,6 +1,8 @@
 import sqlite3
+from coinranking import data
 
 def search(find):
+    data()
     # Connect to the database
     conn = sqlite3.connect("coinranking.db")
 
@@ -29,3 +31,5 @@ def search(find):
     conn.close()
 
     return uuid
+    
+search('BTC')
