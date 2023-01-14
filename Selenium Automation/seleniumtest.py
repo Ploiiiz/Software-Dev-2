@@ -2,16 +2,23 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+import credentials
 import time # for sleep
 
 service = ChromeService(executable_path=ChromeDriverManager().install())
 
 driver = webdriver.Chrome(service=service)
 
+# login
+email = credentials.email
+password = credentials.pwd
+
 # url = input("Your Form URL: ")
-url = 'https://forms.gle/m1m9AFg5rp9LTYnZ8'
+url = 'https://forms.gle/Z8rARWqQ4Wxc1kCt8'
 url2 = 'https://forms.gle/nus7DZoHF9KXTLsx5'
-driver.get(url2)
+driver.get(url)
+time.sleep(5)
 
 # Just in case there are many types of containers
 questions_class = 'Qr7Oae'
@@ -136,17 +143,34 @@ def answer(questions,questions_types):
     sub = driver.find_element(By.XPATH,submitpath)
     sub.click()
 
-questions = getQuestions(driver)
+
 
 def autoFill():
     questions = getQuestions(driver)
     questions_types = getQuestionsTypes(questions)
     answer(questions,questions_types)
 
+def login(driver):
+    e = driver.find_element(By.XPATH,"//input[@type='email']")
+    e.clear()
+    e.send_keys(email)
+    e.send_keys(Keys.ENTER)
+    time.sleep(3)
+
+    p = driver.find_element(By.XPATH,"//input[@type='password']")
+    p.clear()
+    p.send_keys(password)
+    p.send_keys(Keys.ENTER)
+    time.sleep(6)
+
+login(driver)
+questions = getQuestions(driver)
 while questions != []:
     autoFill()
     page += 1
     if page != 1:
         submitpath = buttons[1]
+    time.sleep(3)
+
 
 
