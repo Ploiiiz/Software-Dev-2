@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import json
 import datetime
 import plotly.express as px
-
+import header
 import sqlite3
 
 def line(uuid):
@@ -15,10 +15,7 @@ def line(uuid):
     cursor = conn.cursor()
 
     # Set the API key in the request header
-    headers = {
-        "X-RapidAPI-Key": "7743c81996msh2ad1ff32ce0021ap1d042djsn21d3138a2fb0",
-        "X-RapidAPI-Host": "coinranking1.p.rapidapi.com"
-    }
+    headers = header.headers
 
 
     # Make a request to the Coinranking API

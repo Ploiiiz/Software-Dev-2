@@ -2,6 +2,7 @@ from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import json
 import pandas as pd
+import header_coinmarketcap
 
 url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
 # url = 'https://sandbox-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
@@ -14,11 +15,8 @@ parameters = {
   "limit": limit,
   'convert':'USD'
 }
-headers = {
-  'Accepts': 'application/json',
-  'X-CMC_PRO_API_KEY': '986899e3-848a-4744-924c-3964570ccd76',
-  # 'X-CMC_PRO_API_KEY': 'b54bcf4d-1bca-4e8e-9a24-22ff2c3d462c',
-}
+
+headers = header_coinmarketcap.headers
 
 session = Session()
 session.headers.update(headers)
