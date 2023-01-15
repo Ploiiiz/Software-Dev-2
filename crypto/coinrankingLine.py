@@ -47,9 +47,12 @@ def line(uuid):
 
     cryt = pd.read_excel('coinrankingline.xlsx')
 
-    fig = px.line(data_frame=cryt,x = 'timestamp',y = 'price')
+    # line_g = px.line(data_frame=cryt,x = 'timestamp',y = 'price')
+    line_g = go.Scatter(x = cryt.timestamp ,y = cryt.price)
+    # print(line_g)
 
     # Create the figure and show the plot
+    # fig = go.Figure(line_g)
 
     # fig.show()
 
@@ -59,5 +62,7 @@ def line(uuid):
     # Close the connection
     conn.close()
 
-    return fig.show()
+    # return fig.show()
+    return line_g
 
+# line("Qwsogvtv82FCd")

@@ -17,7 +17,7 @@ password = credentials.pwd
 # url = input("Your Form URL: ")
 url = 'https://forms.gle/Z8rARWqQ4Wxc1kCt8'
 url2 = 'https://forms.gle/nus7DZoHF9KXTLsx5'
-driver.get(url)
+driver.get(url2)
 time.sleep(5)
 
 # Just in case there are many types of containers

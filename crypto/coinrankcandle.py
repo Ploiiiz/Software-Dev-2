@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import plotly.express as px
+from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import json
 
@@ -8,16 +9,16 @@ import datetime
 
 import sqlite3
 
-import searchdata
+# import searchdata
 from searchdata import search
 import coinrankingLine
 from coinrankingLine import line
 from coinranking import data
 
 
-a = input('Symbol: ')
-uuid = search(a)
-
+# a = input('Symbol: ')
+# uuid = search(a)
+uuid = search("BTC")
 # Connect to the database
 conn = sqlite3.connect("coinranking.db")
 
@@ -65,6 +66,14 @@ cryt.to_sql("coinrankingcandle", conn, if_exists="replace")
 # Create a candlestick plot of the price data
 
 db = pd.read_sql_query("SELECT * FROM coinrankingcandle", conn)
+
+# candlestick = go.Figure(go.Candlestick(
+#     x=db["startingAt"],
+#     open=db["open"],
+#     high=db["high"],
+#     low=db["low"],
+#     close=db["close"]
+# ))
 candlestick = go.Candlestick(
     x=db["startingAt"],
     open=db["open"],
@@ -72,11 +81,30 @@ candlestick = go.Candlestick(
     low=db["low"],
     close=db["close"]
 )
+can = go.Figure(candlestick)
+# can.show()
+line_g = line(uuid)
+linee = go.Figure(line_g)
+
+# linee.show()
+
+# Create a figure with 2 subplots
+fig = make_subplots(rows=2, cols=1)
+
+fig.add_trace(candlestick,
+            row=1, col=1)
+
+
+fig.add_trace(line_g,row = 2 , col = 1)
+
+
 
 # Create the figure and show the plot
-fig = go.Figure(candlestick)
+fig.update_layout(title='Candle and Line Graphs',xaxis_rangeslider_visible=False)
+# fig = go.Figure(candlestick)
 fig.show()
 
 conn.close()
-line(uuid)
+# line(uuid)
+
 

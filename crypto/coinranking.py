@@ -23,7 +23,7 @@ def data():
 
     # Make a request to the Coinranking API
     url = "https://api.coinranking.com/v2/coins"
-    params = {"limit": 100,"timePeriod":"1y"}
+    params = {"limit": 100,"timePeriod":"1h"}
     response = requests.get(url, params=params, headers=headers)
 
     # Check the status code of the response
@@ -52,7 +52,8 @@ def data():
 
     # Close the connection
     conn.close()
-data()
+
+  
 
 
 
