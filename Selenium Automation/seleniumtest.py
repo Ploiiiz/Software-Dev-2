@@ -27,6 +27,7 @@ datecontainer = 'o7cIKf'
 rowcontainer = 'gTGYUd'
 optionbox = 'jgvuAb'
 optionslist = 'OA0qNb'
+question_word = 'M7eMe'
 
 containers = [timecontainer,datecontainer,rowcontainer]
 containers_name = ['Time', 'Date', 'Row']
@@ -69,6 +70,8 @@ def getQuestionsTypes(questions):
     for num,question in enumerate(questions,1):
         #print('Question',num,end=' ')
         temp = []
+        question_w = question.find_element(By.CLASS_NAME,question_word)
+        print(question_w.text)
         for classname,name in zip(containers,containers_name):
             find = question.find_elements(By.CLASS_NAME,classname)
             if len(find) != 0:
@@ -111,7 +114,7 @@ def answer(questions,questions_types):
             elif qtype == 'dropdown':
                 ans = current.find_element(By.CLASS_NAME,optionbox)
                 ans.click()
-                time.sleep(1)
+                time.sleep(2)
                 optionsbox = ans.find_element(By.CLASS_NAME,optionslist)
                 options = optionsbox.find_elements(By.CLASS_NAME,minified['dropdown'])
                 options[2].click()
@@ -155,13 +158,13 @@ def login(driver):
     e.clear()
     e.send_keys(email)
     e.send_keys(Keys.ENTER)
-    time.sleep(3)
+    time.sleep(4)
 
     p = driver.find_element(By.XPATH,"//input[@type='password']")
     p.clear()
     p.send_keys(password)
     p.send_keys(Keys.ENTER)
-    time.sleep(6)
+    time.sleep(7)
 
 login(driver)
 questions = getQuestions(driver)

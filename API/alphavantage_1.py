@@ -75,13 +75,14 @@ def getFullDailyData(symbol):
         "function"  :   "TIME_SERIES_DAILY_ADJUSTED",
         "symbol"    :   symbol,
         "apikey"    :   api_key,
-        "datatype"  :   "csv",
+        "datatype"  :   None,
         "outputsize":   "full"
     }
     response = requests.request("GET",url,params=params)
     return response
 
+print(getFullDailyData('IBM').content)
 
 
-if __name__ == "__main__":
-    unittest.main()
+# if __name__ == "__main__":
+#     unittest.main()
