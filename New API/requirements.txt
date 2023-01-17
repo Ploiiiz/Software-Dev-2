@@ -1,0 +1,4 @@
+nbformat>=4.2.0
+plotly==5.11.0
+pandas==1.5.2
+alpha-vantage==2.3.1
