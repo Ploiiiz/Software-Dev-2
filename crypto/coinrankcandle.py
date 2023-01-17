@@ -11,14 +11,32 @@ import sqlite3
 
 # import searchdata
 from searchdata import search
-import coinrankingLine
+# import coinrankingLine
 from coinrankingLine import line
 from coinranking import data
 
+# def d_tick (p):
+#     if p == "hour":
+#         dTick = 200
+#     elif p == "minute":
+#         dTick = 40
+#     elif p == "day":
+#         dTick = 500
+#     elif p == "week":
+#         dTick = 1000
+#     elif p == "month":
+#         dTick = 5000
 
-# a = input('Symbol: ')
-# uuid = search(a)
-uuid = search("BTC")
+#     return dTick
+    
+
+
+a = 'BTC'
+
+# # a = input('Symbol: ')
+
+uuid = search(a)
+# print(uuid)
 # Connect to the database
 conn = sqlite3.connect("coinranking.db")
 
@@ -30,10 +48,11 @@ headers = header.headers
 # Make a request to the Coinranking API
 url = "https://coinranking1.p.rapidapi.com/coin/" + uuid + "/ohlc"
 # url = "https://coinranking1.p.rapidapi.com/coin/Qwsogvtv82FCd/ohlc"
-params = {"referenceCurrencyUuid":"yhjMzLPhuIDl","interval":"hour", "limit":"100"}
+params = {"referenceCurrencyUuid":"yhjMzLPhuIDl","interval":"hour", "limit":"168"}
 response = requests.get(url, params=params, headers=headers)
 
-
+p = params["interval"]
+# print(params["interval"])
 
 
 # Check the status code of the response
@@ -48,29 +67,24 @@ data = json.loads(response.text)
 
 df = pd.DataFrame(data["data"]["ohlc"])
 df["startingAt"] = df["startingAt"].apply(lambda x: datetime.datetime.fromtimestamp(x))
-    
-# print(df)
+df["endingAt"] = df["endingAt"].apply(lambda x: datetime.datetime.fromtimestamp(x))
+
 # Save the DataFrame to a table in the database
 
-
-df.to_excel('coinrankingohlc.xlsx', sheet_name='ohlc', index=True)
+df.to_excel('coinrankingohlc.xlsx', sheet_name= a , index=True)
 
 cryt = pd.read_excel('coinrankingohlc.xlsx')
 
 
-cryt.to_sql("coinrankingcandle", conn, if_exists="replace")
+cryt.to_sql("ohlc" + a , conn, if_exists="replace")
 
 # Create a candlestick plot of the price data
 
-db = pd.read_sql_query("SELECT * FROM coinrankingcandle", conn)
+query = "SELECT * FROM ohlc" + a
 
-# candlestick = go.Figure(go.Candlestick(
-#     x=db["startingAt"],
-#     open=db["open"],
-#     high=db["high"],
-#     low=db["low"],
-#     close=db["close"]
-# ))
+db = pd.read_sql_query(query, conn)
+
+
 candlestick = go.Candlestick(
     x=db["startingAt"],
     open=db["open"],
@@ -79,25 +93,31 @@ candlestick = go.Candlestick(
     close=db["close"]
 )
 can = go.Figure(candlestick)
-# can.show()
+can.update_yaxes() #เปลี่ยนตาม intervals 
+can.show()
 line_g = line(uuid)
 linee = go.Figure(line_g)
 
-# linee.show()
+linee.show()
 
 # Create a figure with 2 subplots
-fig = make_subplots(rows=2, cols=1)
+# fig = make_subplots(rows=2, cols=1)
+fig = make_subplots(specs=[[{"secondary_y": True}]]) #ซ้อนในกราฟเดียวกัน
 
 fig.add_trace(candlestick,
-            row=1, col=1)
+)
+            # row=1, col=1)
 
 
-fig.add_trace(line_g,row = 2 , col = 1)
+fig.add_trace(line_g,
+secondary_y=True)
+# row = 2 , col = 1)
 
 
 
 # Create the figure and show the plot
 fig.update_layout(title='Candle and Line Graphs',xaxis_rangeslider_visible=False)
+
 # fig = go.Figure(candlestick)
 fig.show()
 

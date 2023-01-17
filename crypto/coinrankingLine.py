@@ -8,6 +8,7 @@ import header
 import sqlite3
 
 def line(uuid):
+
     # Connect to the database
     conn = sqlite3.connect("coinranking.db")
 
@@ -37,7 +38,7 @@ def line(uuid):
     df['timestamp']= df['timestamp'].apply(lambda x: datetime.datetime.fromtimestamp(x))
     df.to_excel('coinrankingline.xlsx', sheet_name='line', index=True)
 
-    df.to_sql("coinrankingline", conn, if_exists="replace")
+    df.to_sql("priceBTC" , conn, if_exists="replace")
 
     # Create a line chart
 
@@ -45,7 +46,7 @@ def line(uuid):
     cryt = pd.read_excel('coinrankingline.xlsx')
 
     # line_g = px.line(data_frame=cryt,x = 'timestamp',y = 'price')
-    line_g = go.Scatter(x = cryt.timestamp ,y = cryt.price)
+    line_g = go.Scatter(x = cryt.timestamp ,y = cryt.price, line_color='#0066FF')
     # print(line_g)
 
     # Create the figure and show the plot

@@ -30,5 +30,5 @@ def search(find):
     cursor.close()
     conn.close()
 
-    return uuid  
+    return uuid
 # search('BTC')

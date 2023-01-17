@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import credentials
 import time # for sleep
+import datetime
 
 service = ChromeService(executable_path=ChromeDriverManager().install())
 
@@ -44,11 +45,22 @@ minified = {
     'dropdown':'MocG8c',
     }
 
+#DateAndTime
+now = datetime.datetime.now()
+timeans = []
+timeans.append(str(now.strftime("%H")))
+timeans.append(str(now.strftime("%M")))
+# print(time)
+dateans = str(now.strftime("%m%d%Y"))
+# print(date)
+    
+    
+
 # Filling Forms
 short_answer = 'Lorem ipsum dolor sit amet'
 long_answer  = short_answer + ', consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
-time_answer = '10'
-date_answer = '01012020'
+time_answer = timeans
+date_answer = dateans
 checkbox_answer = [0,1]
 dropdown_answer = 1
 radio_answer = 0
@@ -134,10 +146,10 @@ def answer(questions,questions_types):
             ans.send_keys(date_answer)
         elif container == 'Time':
             ans = current.find_elements(By.CLASS_NAME,timecontainer)
-            for containers in ans:
-                box = containers.find_element(By.CLASS_NAME,minified['textinput'])
+            for i in range(len(ans)):
+                box = ans[i].find_element(By.CLASS_NAME,minified['textinput'])
                 box.clear()
-                box.send_keys(time_answer)
+                box.send_keys(time_answer[i])
         else:
             pass
     sub = driver.find_element(By.XPATH,submitpath)
