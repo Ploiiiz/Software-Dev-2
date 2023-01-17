@@ -9,8 +9,8 @@ class Plotter:
     def timeseries_fig(self):
         fig = go.Figure(data=[go.Candlestick(
             x=self.data.index,
-            open=self.data['1. open'],
-            high=self.data['2. high'],
-            low=self.data['3. low'],
-            close=self.data['4. close'])])
+            open=self.data['open'],
+            high=self.data['high'],
+            low=self.data['low'],
+            close=self.data['close'])])
         return fig

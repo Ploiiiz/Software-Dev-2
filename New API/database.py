@@ -1,42 +1,100 @@
-import sqlite3
 import pandas
-import av_getdata
+# import av_getdata
+import credentials
 from pymongo import MongoClient
 
-class DatabaseBridger:
+class DatabaseConnection:
     def __init__(self) -> None:
-        self.client = MongoClient('localhost', 27017)
-        self.database = None
-        self.collection = None
+        self.client = MongoClient('localhost', credentials.db_port)
+        self.dir = None
+        self.dates = []
     
-    def connect_database(self,database):
-        self.database = self.client[database]
+    def usa_stocks(self):
+        self.dir = self.client.stocksdata.usa_stocks
     
-    def get_collection(self,database,collection):
-        self.collection = self.database[collection]
+    def new_entry(self,ticker):
+        if self.dir.find_one({'ticker': ticker}) == None:
+            schema = {
+                "ticker": ticker,
+                "data": {
+                    "ticker": ticker,
+                    "date": [],
+                    "open": [],
+                    "high": [],
+                    "low": [],
+                    "close": [],
+                    "adjusted_close": [],
+                    "volume": []
+                }
+            }
+            self.dir.insert_one(schema)
     
-    def post(self,ticker,open,high,low,close,adj_close,vol):
-        schema = {
-            "ticker": ticker,
-            "open": open,
-            "high": high,
-            "low": low,
-            "close": close,
-            "adjusted_close": adj_close,
-            "volume": vol
-        }
-        self.collection.insert_one(schema)
+    def update(self,ticker,date,data):
+        open,high,low,close,adj,vol = data[0],data[1],data[2],data[3],data[4],data[5]
+        self.dir.update_one(
+            {'ticker': ticker}, 
+            {'$push': {
+                'data.date' : date,
+                'data.open' : open,
+                'data.high' : high,
+                'data.low' : low,
+                'data.close' : close,
+                'data.adjusted_close' : adj,
+                'data.volume' : vol
+                }
+            }
+        )
+    
+    def get_dates(self,ticker):
+        data_objects = self.dir.find_one(
+            {'ticker': ticker}, 
+            {'data': {
+                'date':1,
+                    }
+                }
+            )
+        self.dates = data_objects['data']['date']
+
+    def push_data(self,ticker,data):
+        self.get_dates(ticker)
+        for date,values in zip(data.index,data.values):
+            data_arr = values[:-2] # no dividend amount, split coefficient
+            if date not in self.dates:
+                self.update(ticker,date,data_arr)
+
+    def _data(self,ticker):
+        data = self.dir.find_one(
+            {'ticker': ticker}, {'data': {
+                'date':1,
+                'open':1,
+                'high':1,
+                'low':1,
+                'close':1,
+                'volume':1
+                }
+            }
+        )
+        return data
+
+    def make_dataframe(self,data):
+        dataframe = pandas.DataFrame(
+            {
+                'date' : data['data']['date'],
+                'open' : data['data']['open'],
+                'high' : data['data']['high'],
+                'low' : data['data']['low'],
+                'close' : data['data']['close'],
+                'volume' : data['data']['volume'],
+            }
+        )
+        return dataframe
+
+    def get_data(self,ticker):
+        data = self._data(ticker)
+        df = self.make_dataframe(data)
+        return df          
 
 
-client = MongoClient('localhost', 27017)
-client['stocksdata']['usa_stocks'].insert_one({
-            "ticker": 'IBM',
-            "open": 144.06,
-            "high": 146.1,
-            "low": 144.01,
-            "close": 145.89,
-            "adjusted_close": 145.89,
-            "volume": 2455786.0
-        })
-
-    
+# conn = DatabaseConnection()
+# db = conn.client.stocksdata.usa_stocks
+# db.insert_one(conn.post('IBM'))

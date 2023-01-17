@@ -11,4 +11,5 @@ settrade_appcode = "SANDBOX"
 settrade_equity = "isiri-E"
 settrade_derivatives = "isiri-D"
 settrade_pin = "000000"
+db_port = 27017
 
