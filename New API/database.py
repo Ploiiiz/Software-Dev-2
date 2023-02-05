@@ -1,16 +1,20 @@
 import pandas
-# import av_getdata
+import av_getdata
 import credentials
 from pymongo import MongoClient
+import datetime
 
 class DatabaseConnection:
     def __init__(self) -> None:
         self.client = MongoClient('localhost', credentials.db_port)
-        self.dir = None
-        self.dates = []
-    
-    def usa_stocks(self):
+        self.fetcher = av_getdata.StocksData()
         self.dir = self.client.stocksdata.usa_stocks
+        # self.dir = None
+        self.dates = []
+        self.today = datetime.datetime.today
+    
+    # def usa_stocks(self):
+    #     self.dir = self.client.stocksdata.usa_stocks
     
     def new_entry(self,ticker):
         if self.dir.find_one({'ticker': ticker}) == None:
@@ -29,12 +33,12 @@ class DatabaseConnection:
             }
             self.dir.insert_one(schema)
     
-    def update(self,ticker,date,data):
+    def _update(self,ticker,date,data):
         open,high,low,close,adj,vol = data[0],data[1],data[2],data[3],data[4],data[5]
         self.dir.update_one(
             {'ticker': ticker}, 
             {'$push': {
-                'data.date' : date,
+                'data._id' : date,
                 'data.open' : open,
                 'data.high' : high,
                 'data.low' : low,
@@ -55,12 +59,12 @@ class DatabaseConnection:
             )
         self.dates = data_objects['data']['date']
 
-    def push_data(self,ticker,data):
+    def _push_data(self,ticker,data):
         self.get_dates(ticker)
         for date,values in zip(data.index,data.values):
             data_arr = values[:-2] # no dividend amount, split coefficient
             if date not in self.dates:
-                self.update(ticker,date,data_arr)
+                self._update(ticker,date,data_arr)
 
     def _data(self,ticker):
         data = self.dir.find_one(
@@ -90,9 +94,20 @@ class DatabaseConnection:
         return dataframe
 
     def get_data(self,ticker):
+        #self.update_data(ticker)
         data = self._data(ticker)
         df = self.make_dataframe(data)
         return df          
+
+    def fetch(self,ticker):
+        stocks_data, metadata = self.fetcher.daily_adjusted(ticker,'full')
+        return stocks_data
+
+    def update_data(self,ticker):
+        fulldata = self.fetch(ticker)
+        fulldata = fulldata.drop(['7. dividend amount', '8. split coefficient'],axis=1)
+        fulldata.sort_index()
+        self._push_data(ticker,fulldata)
 
 
 # conn = DatabaseConnection()

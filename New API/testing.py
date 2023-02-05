@@ -7,7 +7,7 @@ from pprint import pprint
 import sys
 
 con = DatabaseConnection()
-con.usa_stocks()
+# con.usa_stocks()
 
 # for i in stocks:
 #     con.new_entry(i)
@@ -15,16 +15,16 @@ con.usa_stocks()
 # randomstocks = stocks[23]
 
 # stocks_data = StocksData()
-# stocks_23,metadata = stocks_data.daily_adjusted(randomstocks,'full')
+# stocks_KO,metadata = stocks_data.daily_adjusted('KO','full')
 
 # con.push_data(randomstocks,stocks_23)
 
 # print(randomstocks)
-KO_data = con.get_data('KO')
+IBM_data = con.get_data('IBM')
 # IBM_data = con.get_data('IBM')
 
 # pprint(KO_data)
 # pprint(IBM_data)
 
-plot = Plotter(KO_data)
+plot = Plotter(IBM_data)
 plot.timeseries_fig().show()
