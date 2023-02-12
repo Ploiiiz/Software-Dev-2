@@ -120,8 +120,9 @@ import sqlite3
 # from searchdata import CoinRankingSearch
 
 class CoinRankingOHLC:
-    def __init__(self, uuid, interval, limit, symbol):
+    def __init__(self, uuid, interval, limit, symbol,name):
         self.uuid = uuid
+        self.name = name 
         self.interval = interval
         self.limit = limit
         self.symbol = symbol
@@ -148,8 +149,8 @@ class CoinRankingOHLC:
                
 
 
-    def save_to_database(self):        
-        self.df.to_sql("ohlc" + self.symbol + "_" + self.interval, self.conn, if_exists="replace")          
+    
+          
         
             
     def save_to_excel(self):
@@ -163,9 +164,10 @@ class CoinRankingOHLC:
             open=db["open"],
             high=db["high"],
             low=db["low"],
-            close=db["close"]
+            close=db["close"],            
         )
         can = go.Figure(candlestick)
+        can.update_layout(title=self.name + " " + "(" + self.symbol + ")")
         can.update_yaxes() # update the y-axis according to the interval
         can.show()
         

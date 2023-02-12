@@ -67,8 +67,9 @@ import sqlite3
 
 
 class CoinPriceHistory:
-    def __init__(self, uuid, timePeriod, symbol):
+    def __init__(self, uuid, timePeriod, symbol,name):
         self.uuid = uuid
+        self.name = name
         self.timePeriod = timePeriod        
         self.symbol = symbol
         self.headers = header.headers
@@ -107,7 +108,7 @@ class CoinPriceHistory:
         
         db = pd.read_sql_query(query, self.conn)
     
-        fig = px.line(db, x='timestamp', y="price")
+        fig = px.line(db, x='timestamp', y="price",title=self.name + " " + "(" + self.symbol + ")")
         
         fig.show()
         
@@ -118,7 +119,7 @@ class CoinPriceHistory:
 
 if __name__ == "__main__":
     # 3h 24h 7d 30d 3m 1y 3y 5y
-    cr = CoinPriceHistory("Qwsogvtv82FCd", "24h", "BTC")
+    cr = CoinPriceHistory("Qwsogvtv82FCd", "24h", "BTC","Bitcoin")
     # cr.get_symbol()
 #     cr = CoinRankingOHLC(uuid, interval, limit)
     cr.retrieve_data()
