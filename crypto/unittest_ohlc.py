@@ -13,9 +13,6 @@ from unittest.mock import Mock
 
 
 class TestOHLC(unittest.TestCase):
-    # def setUp(self):
-    #     self.ohlc = CoinRankingOHLC(uuid='yhjMzLPhuIDl', interval='1h', limit=10, symbol='BTC', name='Bitcoin')
-    #     self.ohlc.retrieve_data()
     
     #testing the "name" attribute of the CoinRankingOHLC class
     def test_name(self): 
