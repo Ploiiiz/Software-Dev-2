@@ -34,16 +34,13 @@ class CoinRankingOHLC:
         data = json.loads(response.text)
         self.df = pd.DataFrame(data["data"]["ohlc"])
         self.df["startingAt"] = self.df["startingAt"].apply(lambda x: datetime.datetime.fromtimestamp(x))
-        self.df["endingAt"] = self.df["endingAt"].apply(lambda x: datetime.datetime.fromtimestamp(x))
-               
+        self.df["endingAt"] = self.df["endingAt"].apply(lambda x: datetime.datetime.fromtimestamp(x))          
 
-
-    
-          
-        
-            
     def save_to_excel(self):
         self.df.to_excel('coinrankingohlc.xlsx', sheet_name= self.symbol + "_" + self.interval , index=True)
+
+    def save_to_database(self):        
+        self.df.to_sql("ohlc" + self.symbol + "_" + self.interval, self.conn, if_exists="replace")
         
     def show_candlestick(self):
         query = "SELECT * FROM ohlc" + self.symbol + "_" + self.interval

@@ -9,22 +9,19 @@ class CoinRankingSearch:
         self.name = None
         self.price = None
         self.change = None
+        self.conn = sqlite3.connect("coinranking.db")
+        self.cursor = self.conn.cursor()
         
     def data(self):
-        # Connect to the database
-        conn = sqlite3.connect("coinranking.db")
-
-        # Create a cursor
-        cursor = conn.cursor()
-
+        
         query = '''
         SELECT name,symbol,price,uuid,change FROM coinrankingdata WHERE symbol = ?
         '''
         # Execute the SELECT statement
-        cursor.execute(query, (self.find,))
+        self.cursor.execute(query, (self.find,))
 
         # Iterate through the rows returned by the SELECT statement and print out the data for each column
-        for (name, symbol, price,uuid,change) in cursor:
+        for (name, symbol, price,uuid,change) in self.cursor:
             self.uuid = uuid
             self.name = name
             self.price = price
@@ -34,8 +31,8 @@ class CoinRankingSearch:
             print(f'Change: {change}')
 
         # Close the cursor and connection
-        cursor.close()
-        conn.close()
+        self.cursor.close()
+        # self.conn.close()
         
         
     def get_uuid(self):
@@ -49,6 +46,18 @@ class CoinRankingSearch:
     
     def get_change(self):
         return self.change
+
+    def insert_data(self):
+        
+        self.cursor.execute("""
+            INSERT INTO coinrankingdata (name, symbol, price, uuid, change)
+            VALUES (?, ?, ?, ?, ?)
+        """, (self.name, self.find, self.price, self.uuid, self.change))
+        self.conn.commit()
+        self.cursor.close()
+
+    def close_connection(self):
+        self.conn.close()
     
     
 
@@ -56,11 +65,17 @@ class CoinRankingSearch:
 
 if __name__ == "__main__":
     # symbol = input("Enter the symbol of the coin you want to search for: ")
-    symbol = "BTC"
-    search = CoinRankingSearch(symbol)
-    search.data()
-    uuid = search.get_uuid()
-    name = search.get_name()
+    symbol = "ST"
+    search = CoinRankingSearch(symbol)    
+    # search.data()
+    search.uuid = "Santaiscat"
+    search.name = "Santa"
+    search.price = 10000
+    search.change = 0.05
+    search.insert_data()
+    # search.close_connection()
+    # uuid = search.get_uuid()
+    # name = search.get_name()
         # interval = input("Enter the interval : ")
     # minute hour 8hours day week month
     interval = "day"
@@ -70,16 +85,16 @@ if __name__ == "__main__":
     timePeriod = "24h"
     # symbol=search.get_symbol()
     # print(symbol)
-    ohlc = CoinRankingOHLC(uuid, interval, limit, symbol,name)
-    ohlc.retrieve_data()
-    ohlc.save_to_database()
-    ohlc.show_candlestick()
-    ohlc.close_connection()
-    cr = CoinPriceHistory(uuid, timePeriod, symbol,name)
-    cr.retrieve_data()
-    cr.save_to_database()
-#     # cr.save_to_excel()
-    cr.show_linechart()
-    cr.close_connection()
+#     ohlc = CoinRankingOHLC(uuid, interval, limit, symbol,name)
+#     ohlc.retrieve_data()
+#     ohlc.save_to_database()
+#     ohlc.show_candlestick()
+#     ohlc.close_connection()
+#     cr = CoinPriceHistory(uuid, timePeriod, symbol,name)
+#     cr.retrieve_data()
+#     cr.save_to_database()
+# #     # cr.save_to_excel()
+#     cr.show_linechart()
+#     cr.close_connection()
     
 

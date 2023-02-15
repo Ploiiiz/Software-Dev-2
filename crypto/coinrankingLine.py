@@ -26,7 +26,7 @@ class CoinPriceHistory:
             print("Error: Could not retrieve data from Coinranking API")
             exit()
         data = json.loads(response.text)
-        print(data["data"]["history"])
+        # print(data["data"]["history"])
         self.df = pd.DataFrame(data["data"]["history"])
         self.df["price"] = pd.to_numeric(self.df["price"])
 

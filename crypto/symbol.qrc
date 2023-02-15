@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="Symbol">
+    <file>dollar.png</file>
+    <file>bitcoin.png</file>
+  </qresource>
+</RCC>

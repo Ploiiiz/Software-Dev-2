@@ -8,7 +8,8 @@ from coinrankcandle import CoinRankingOHLC
 
 import requests_mock
 import datetime
-from unittest.mock import Mock
+from unittest.mock import MagicMock
+import sqlite3
 
 
 
@@ -50,6 +51,17 @@ class TestOHLC(unittest.TestCase):
         expected_timestamp = datetime.datetime.fromtimestamp(161398400)
 
         assert self.ohlc.df["startingAt"][0] == expected_timestamp
+
+
+    def test_insert_data(self):
+        mock_conn = MagicMock()
+        sqlite3.connect = MagicMock(return_value = mock_conn)
+        mock_cursor = MagicMock()
+        mock_conn.cursor.return_value = mock_cursor
+
+        coin = CoinRankingOHLC()
+        
+
    
         
         
