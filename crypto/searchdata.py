@@ -32,14 +32,42 @@ class CoinRankingSearch:
 
         # Close the cursor and connection
         self.cursor.close()
-        # self.conn.close()
+        self.conn.close()
         
         
     def get_uuid(self):
-        return self.uuid
+
+        query = '''
+        SELECT uuid FROM coinrankingdata WHERE symbol = ?
+        '''
+        # Execute the SELECT statement
+        self.cursor.execute(query, (self.find,))
+        row = self.cursor.fetchone()
+        if row:
+            self.uuid = row[0]
+            # self.conn.commit()
+            # self.cursor.close()
+            return self.uuid
+        else:
+            return None
+        
+        
+        
 
     def get_name(self):
-        return self.name
+        query = '''
+        SELECT name FROM coinrankingdata WHERE symbol = ?
+        '''
+        # Execute the SELECT statement
+        self.cursor.execute(query, (self.find,))
+        row = self.cursor.fetchone()
+        if row:
+            self.name = row[0]
+            # self.conn.commit()
+            # self.cursor.close()
+            return self.name
+        else:
+            return None
 
     def get_price(self):
         return self.price
@@ -56,8 +84,43 @@ class CoinRankingSearch:
         self.conn.commit()
         self.cursor.close()
 
-    def close_connection(self):
-        self.conn.close()
+
+    def delete_data(self):
+
+        self.cursor.execute("""
+            DELETE FROM coinrankingdata WHERE symbol = ?
+        """, (self.find,))
+        self.conn.commit()
+        
+
+
+    def update_data(self):
+        set_clause = ''
+        if self.name:
+            set_clause += 'name = "{}",'.format(self.name)
+        if self.price:
+            set_clause += 'price = {},'.format(self.price)
+        if self.uuid:
+            set_clause += 'uuid = "{}",'.format(self.uuid)
+        if self.change:
+            set_clause += 'change = {},'.format(self.change)
+
+        set_clause = set_clause[:-1]  # remove the last comma
+
+        query = '''
+            UPDATE coinrankingdata SET {}
+            WHERE symbol = ?
+        '''.format(set_clause)
+
+        self.cursor.execute(query, (self.find,))
+        self.conn.commit()
+        self.cursor.close()
+        
+
+
+
+    # def close_connection(self):
+    #     self.conn.close()
     
     
 
@@ -68,14 +131,22 @@ if __name__ == "__main__":
     symbol = "ST"
     search = CoinRankingSearch(symbol)    
     # search.data()
-    search.uuid = "Santaiscat"
-    search.name = "Santa"
-    search.price = 10000
-    search.change = 0.05
-    search.insert_data()
-    # search.close_connection()
     # uuid = search.get_uuid()
+    
+    # search.uuid = "Santaiscat"
+    # search.name = "Santa"
+    # search.price = 12500
+    # search.change = 0.05
+    # search.insert_data()
+    search.delete_data()
+    # search.update_data()
+
+
+    # uuid = search.get_uuid()
+    # print(uuid)
     # name = search.get_name()
+    # print(name)
+
         # interval = input("Enter the interval : ")
     # minute hour 8hours day week month
     interval = "day"
