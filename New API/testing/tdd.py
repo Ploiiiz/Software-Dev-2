@@ -232,7 +232,7 @@ class TestFetching(unittest.TestCase):
         self.assertIsInstance(data, pd.DataFrame)
 
     # News Sentiment
-    # @patch('requests.get')
+    # @patch('requests.get') 
     # def test_news(self,mock_get):
     #     rq = Mock()
     #     rq.json.return_value = newsdata
