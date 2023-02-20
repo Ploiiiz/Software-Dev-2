@@ -7,12 +7,12 @@
 
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-
+import resources
 
 class Ui_Viewer(object):
     def setupUi(self, Viewer):
         Viewer.setObjectName("Viewer")
-        Viewer.resize(1280, 832)
+        Viewer.resize(1280, 771)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -48,7 +48,7 @@ class Ui_Viewer(object):
 "font-size: 10pt;\n"
 "")
         self.label_2.setText("")
-        self.label_2.setPixmap(QtGui.QPixmap("images/stocks.png"))
+        self.label_2.setPixmap(QtGui.QPixmap(":/icons/images/stocks.png"))
         self.label_2.setScaledContents(True)
         self.label_2.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_2.setObjectName("label_2")
@@ -60,12 +60,12 @@ class Ui_Viewer(object):
         self.checkBox.setStyleSheet("QCheckBox::indicator:unchecked {\n"
 "    width: 45px;\n"
 "    height: 24px;\n"
-"    image: url(images/off.png);\n"
+"    image: url(:/icons/images/off.png);\n"
 "}\n"
 "QCheckBox::indicator:checked {\n"
 "    width: 45px;\n"
 "    height: 24px;\n"
-"    image: url(images/on.png);\n"
+"    image: url(:/icons/images/on.png);\n"
 "}")
         self.checkBox.setText("")
         self.checkBox.setIconSize(QtCore.QSize(45, 24))
@@ -78,7 +78,7 @@ class Ui_Viewer(object):
         self.label.setStyleSheet("font-weight: 400;\n"
 "font-size: 10pt;")
         self.label.setText("")
-        self.label.setPixmap(QtGui.QPixmap("images/crypto.png"))
+        self.label.setPixmap(QtGui.QPixmap(":/icons/images/crypto.png"))
         self.label.setScaledContents(True)
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label.setObjectName("label")
@@ -86,20 +86,19 @@ class Ui_Viewer(object):
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.comboBox = QtWidgets.QComboBox(parent=self.frame)
-        self.comboBox.setMinimumSize(QtCore.QSize(50, 0))
-        self.comboBox.setMaximumSize(QtCore.QSize(60, 19))
+        self.comboBox.setMinimumSize(QtCore.QSize(70, 0))
+        self.comboBox.setMaximumSize(QtCore.QSize(1666666, 1666666))
         self.comboBox.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
         self.comboBox.setStyleSheet("QComboBox{\n"
 "    font-weight: 400;\n"
-"    font-size: 10pt;\n"
+"    font-size: 11pt;\n"
 "}\n"
 "QComboBox::drop-down {\n"
 "    border: 0;\n"
 "}\n"
 "QComboBox::down-arrow {\n"
-"    top: 1px;\n"
-"    left: -3px;\n"
-"    image: url(images/down.png);\n"
+"    margin: -1 0 0 -1;\n"
+"    image: url(:/icons/images/down.png);\n"
 "    height: 13px;\n"
 "    width: 13px;\n"
 "}")
@@ -129,6 +128,7 @@ class Ui_Viewer(object):
         self.horizontalLayout_2.addWidget(self.pushButton_2)
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
         self.lineEdit = QtWidgets.QLineEdit(parent=self.frame)
+        self.lineEdit.setMinimumSize(QtCore.QSize(0, 24))
         self.lineEdit.setMaximumSize(QtCore.QSize(16777215, 31))
         self.lineEdit.setStyleSheet("border: 1px solid #001A27;\n"
 "border-radius: 12px;\n"
@@ -200,7 +200,7 @@ class Ui_Viewer(object):
         self.verticalLayout_6.addWidget(self.label_7)
         self.horizontalLayout_4.addLayout(self.verticalLayout_6)
         self.verticalLayout_3.addLayout(self.horizontalLayout_4)
-        spacerItem3 = QtWidgets.QSpacerItem(17, 17, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Maximum)
+        spacerItem3 = QtWidgets.QSpacerItem(17 , 17, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Maximum)
         self.verticalLayout_3.addItem(spacerItem3)
         self.tabWidget = QtWidgets.QTabWidget(parent=self.frame1)
         self.tabWidget.setStyleSheet("QTabWidget::tab-bar {\n"
@@ -225,8 +225,8 @@ class Ui_Viewer(object):
 "    }\n"
 "QTabBar::tab:selected {\n"
 "    font-weight: bold;\n"
-"    color: #75FBFD;"
-"	 text-decoration: underline;"
+"    color: #75FBFD;\n"
+"    text-decoration: underline;\n"
 "    background-color: transparent;\n"
 "    }")
         self.tabWidget.setObjectName("tabWidget")
@@ -248,7 +248,6 @@ class Ui_Viewer(object):
         self.retranslateUi(Viewer)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Viewer)
-		
 
     def retranslateUi(self, Viewer):
         _translate = QtCore.QCoreApplication.translate
@@ -258,7 +257,7 @@ class Ui_Viewer(object):
         self.label_3.setText(_translate("Viewer", "Symbol"))
         self.pushButton_2.setText(_translate("Viewer", "+"))
         self.label_4.setText(_translate("Viewer", "SYMB"))
-        self.label_6.setText(_translate("Viewer", "NASDAQ"))
+        self.label_6.setText(_translate("Viewer", "Market"))
         self.label_5.setText(_translate("Viewer", "Company Name"))
         self.label_9.setText(_translate("Viewer", "Price"))
         self.label_8.setText(_translate("Viewer", "%change"))
