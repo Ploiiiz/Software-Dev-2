@@ -225,8 +225,7 @@ class Ui_Viewer(object):
 "    }\n"
 "QTabBar::tab:selected {\n"
 "    font-weight: bold;\n"
-"    color: #75FBFD;\n"
-"    text-decoration: underline;\n"
+"    color: rgba(255,255,255,1);\n"
 "    background-color: transparent;\n"
 "    }")
         self.tabWidget.setObjectName("tabWidget")
