@@ -138,28 +138,36 @@ class Ui_Viewer(object):
         self.verticalLayout_2.addWidget(self.lineEdit)
         self.listView = QtWidgets.QListWidget(parent=self.frame)
         self.listView.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        self.listView.setStyleSheet("")
+        self.listView.setStyleSheet('''
+        QScrollBar {
+            width: 6px;
+        }
+
+        QScrollBar::handle:vertical {
+            background: rgb(22,58,87);
+            border-radius: 3px;
+        }
+        QScrollBar::add-line:vertical {
+            height: 0px;
+        }
+
+        QScrollBar::sub-line:vertical {
+            height: 0px;
+        }
+        ''')
         self.listView.setObjectName("listView")
         self.listView.setLayout(QtWidgets.QVBoxLayout())
-        
-        # #Model
-        # self.model = QtGui.QStandardItemModel()
-        # self.listView.setModel(self.model)
-        # self.listView.setObjectName("listView-1")
-        # for i in range(8): 
-        #      item = QtGui.QStandardItem()
-        #      item.setEditable(False)
-        #      self.model.appendRow(item)
+        self.listView.itemClicked.connect(self.selectionChanged)
+
         
         for i in range(10):
-            item = QtWidgets.QListWidgetItem()
-            self.listView.addItem(item)
-            widget = QtWidgets.QWidget()
-            itemized = listItem()
-            itemized.setupUi(widget)
-            self.listView.setItemWidget(item,widget)
-            
-            
+            widg = QtWidgets.QWidget()
+            items = listItem()
+            items = items.setupUi(widg)
+            qitem = QtWidgets.QListWidgetItem(str(i))
+            qitem.setSizeHint(QtCore.QSize(1,77))
+            self.listView.addItem(qitem)
+            self.listView.setItemWidget(qitem,widg)
 
         self.verticalLayout_2.addWidget(self.listView)
         self.gridLayout.addWidget(self.frame, 0, 0, 1, 1)
@@ -285,63 +293,86 @@ class Ui_Viewer(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Viewer", "Prices"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Viewer", "News"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("Viewer", "Information"))
+    
+    def selectionChanged(self):
+        current = self.listView.selectedItems()
+        print("Selected items: ", current)
+        current[0].setBackground('#FFFFFF')
+
+        
+
+
 class listItem(object):
     def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(294, 77)
-        Form.setMinimumSize(QtCore.QSize(0, 77))
-        Form.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        # Form.setObjectName("Form")
+        # Form.resize(294, 77)
+        # Form.setMinimumSize(QtCore.QSize(0, 77))
+        # Form.setMaximumSize(QtCore.QSize(16777215, 77))
         self.horizontalLayout = QtWidgets.QHBoxLayout(Form)
-        self.horizontalLayout.setContentsMargins(15, 0, 0, 0)
-        self.horizontalLayout.setSpacing(1)
+        self.horizontalLayout.setContentsMargins(15, 0, 5, 0)
+        self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.label = QtWidgets.QLabel(parent=Form)
-        self.label.setStyleSheet("font-weight: bold;\n"
-"font-size: 16pt;")
-        self.label.setObjectName("label")
-        self.verticalLayout.addWidget(self.label)
-        self.label_5 = QtWidgets.QLabel(parent=Form)
-        self.label_5.setStyleSheet("font-size: 11pt;\n"
-"color: rgba(255,255,255,0.8);")
-        self.label_5.setObjectName("label_5")
-        self.verticalLayout.addWidget(self.label_5)
-        self.horizontalLayout.addLayout(self.verticalLayout)
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_2.setSpacing(0)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setSpacing(0)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.label_6 = QtWidgets.QLabel(parent=Form)
-        self.label_6.setStyleSheet("font-size: 13pt;")
-        self.label_6.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
-        self.label_6.setObjectName("label_6")
-        self.horizontalLayout_2.addWidget(self.label_6)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setSpacing(5)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.label_2 = QtWidgets.QLabel(parent=Form)
-        self.label_2.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_2.setStyleSheet("font-size: 15.6pt;\n"
+"font-weight: 800;\n"
+"color: rgba(255,255,255,1);")
+        self.label_2.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label_2.setObjectName("label_2")
-        self.horizontalLayout_2.addWidget(self.label_2)
-        self.horizontalLayout_2.setStretch(0, 4)
-        self.horizontalLayout_2.setStretch(1, 1)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout_3.addWidget(self.label_2)
+        self.label = QtWidgets.QLabel(parent=Form)
+        self.label.setStyleSheet("font-size: 13pt;\n"
+"color: rgba(255,255,255,1);")
+        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.label.setObjectName("label")
+        self.horizontalLayout_3.addWidget(self.label)
+        self.label_6 = QtWidgets.QLabel(parent=Form)
+        self.label_6.setStyleSheet("height: 13px;\n"
+"    width: 13px;")
+        self.label_6.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_6.setObjectName("label_6")
+        self.label_6.setPixmap(QtGui.QPixmap(":/icons/images/pos.png"))
+        self.label_6.setScaledContents(True)
+        self.label_6.setMaximumSize(15,4)
+        self.horizontalLayout_3.addWidget(self.label_6)
+        self.horizontalLayout_3.setStretch(0, 5)
+        self.horizontalLayout_3.setStretch(1, 3)
+        self.horizontalLayout_3.setStretch(2, 1)
+        self.verticalLayout.addLayout(self.horizontalLayout_3)
+        self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_5.setSpacing(0)
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.label_3 = QtWidgets.QLabel(parent=Form)
+        self.label_3.setStyleSheet("font-size: 10.4pt;\n"
+"font-weight: 300;\n"
+"color: rgba(255,255,255,0.8);")
+        self.label_3.setObjectName("label_3")
+        self.horizontalLayout_5.addWidget(self.label_3)
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_3.setSpacing(0)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.label_4 = QtWidgets.QLabel(parent=Form)
-        self.label_4.setStyleSheet("font-size: 8pt;\n"
+        self.label_4.setStyleSheet("font-size: 7.8pt;\n"
+"font-weight: 300;\n"
 "color: rgba(255,255,255,0.75);")
         self.label_4.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label_4.setObjectName("label_4")
-        self.verticalLayout_2.addWidget(self.label_4)
-        self.label_3 = QtWidgets.QLabel(parent=Form)
-        self.label_3.setStyleSheet("font-size: 8pt;\n"
+        self.verticalLayout_3.addWidget(self.label_4)
+        self.label_5 = QtWidgets.QLabel(parent=Form)
+        self.label_5.setStyleSheet("font-size: 7.8pt;\n"
+"font-weight: 300;\n"
 "color: rgba(255,255,255,0.75);")
-        self.label_3.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
-        self.label_3.setObjectName("label_3")
-        self.verticalLayout_2.addWidget(self.label_3)
-        self.horizontalLayout.addLayout(self.verticalLayout_2)
-        self.horizontalLayout.setStretch(0, 3)
-        self.horizontalLayout.setStretch(1, 2)
+        self.label_5.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.label_5.setObjectName("label_5")
+        self.verticalLayout_3.addWidget(self.label_5)
+        self.horizontalLayout_5.addLayout(self.verticalLayout_3)
+        self.verticalLayout.addLayout(self.horizontalLayout_5)
+        self.horizontalLayout.addLayout(self.verticalLayout)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -349,12 +380,12 @@ class listItem(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
-        self.label.setText(_translate("Form", "SYMB"))
-        self.label_5.setText(_translate("Form", "Company Name"))
-        self.label_6.setText(_translate("Form", "Price"))
-        self.label_2.setText(_translate("Form", "ar"))
+        self.label_2.setText(_translate("Form", "AAPL"))
+        self.label.setText(_translate("Form", "133.13"))
+        self.label_6.setText(_translate("Form", ""))
+        self.label_3.setText(_translate("Form", "Apple Inc."))
         self.label_4.setText(_translate("Form", "%change"))
-        self.label_3.setText(_translate("Form", "Mkt. cap"))
+        self.label_5.setText(_translate("Form", "Mkt. Cap"))
 
 
 
