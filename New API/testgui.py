@@ -31,7 +31,11 @@ class Ui_Viewer(object):
         self.gridLayout.setSpacing(0)
         self.gridLayout.setObjectName("gridLayout")
         self.frame = QtWidgets.QFrame(parent=self.centralwidget)
-        self.frame.setStyleSheet("background-color: #002234;")
+        self.frame.setStyleSheet('''
+        QFrame, QComboBox, QPushButton, QWidget{
+        background-color: #002234;
+        }
+        ''')
         self.frame.setObjectName("frame")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.frame)
         self.verticalLayout_2.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint)
@@ -142,7 +146,6 @@ class Ui_Viewer(object):
         QScrollBar {
             width: 6px;
         }
-
         QScrollBar::handle:vertical {
             background: rgb(22,58,87);
             border-radius: 3px;
@@ -150,7 +153,6 @@ class Ui_Viewer(object):
         QScrollBar::add-line:vertical {
             height: 0px;
         }
-
         QScrollBar::sub-line:vertical {
             height: 0px;
         }
@@ -158,16 +160,32 @@ class Ui_Viewer(object):
         self.listView.setObjectName("listView")
         self.listView.setLayout(QtWidgets.QVBoxLayout())
         self.listView.itemClicked.connect(self.selectionChanged)
+        global items, cur, past, fake_obj
+        past = 0
+        cur = 0
+        fake_obj = [('SYM'+str(i),'Full Inc.'+str(i),str(100.93),'1.3%(0.6)','2.445T') for i in range(10)]
+        items = [listItem(i[0],i[1],i[2],i[3],i[4]) for i in fake_obj]
+        widgetlist = []
+        #convert to QWidget
+        for i in items:
+            container = QtWidgets.QWidget()
+            i.setupUi(container)
+            widgetlist.append(container)
+	
+            
+        containers = []
+	#put widget in listwidgetitem
+        for j in widgetlist:
+            itemcontainer = QtWidgets.QListWidgetItem()
+            itemcontainer.setSizeHint(QtCore.QSize(1,77))
+            containers.append(itemcontainer)
+            self.listView.addItem(itemcontainer)
+            self.listView.setItemWidget(itemcontainer,j)
+            
+        self.listView.setCurrentRow(0)
+        self.listView.setItemWidget(containers[0],widgetlist[0])
 
         
-        for i in range(10):
-            widg = QtWidgets.QWidget()
-            items = listItem()
-            items = items.setupUi(widg)
-            qitem = QtWidgets.QListWidgetItem(str(i))
-            qitem.setSizeHint(QtCore.QSize(1,77))
-            self.listView.addItem(qitem)
-            self.listView.setItemWidget(qitem,widg)
 
         self.verticalLayout_2.addWidget(self.listView)
         self.gridLayout.addWidget(self.frame, 0, 0, 1, 1)
@@ -274,7 +292,9 @@ class Ui_Viewer(object):
         Viewer.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(Viewer)
+        self.setSelected(0)
         self.tabWidget.setCurrentIndex(0)
+        items[0].setHighlight()
         QtCore.QMetaObject.connectSlotsByName(Viewer)
 
     def retranslateUi(self, Viewer):
@@ -293,16 +313,37 @@ class Ui_Viewer(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Viewer", "Prices"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Viewer", "News"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("Viewer", "Information"))
+
+    def setSelected(self,index):
+        _translate = QtCore.QCoreApplication.translate
+        symbol,full,price,change,cap = fake_obj[index]
+        self.label_4.setText(_translate("Viewer", symbol))
+        self.label_6.setText(_translate("Viewer", "NASDAQ"))
+        self.label_5.setText(_translate("Viewer", full))
+        self.label_9.setText(_translate("Viewer", price))
+        self.label_8.setText(_translate("Viewer", change))
+        self.label_7.setText(_translate("Viewer", cap))
     
     def selectionChanged(self):
-        current = self.listView.selectedItems()
-        print("Selected items: ", current)
-        current[0].setBackground('#FFFFFF')
+        global past, cur
+        past = cur
+        current = self.listView.currentRow()
+        cur = current
+        #print("Selected item: ", current)
+        items[past].unsetHightlight()
+        items[current].setHighlight()
+        self.setSelected(cur)
 
         
 
 
 class listItem(object):
+    def __init__(self,symbol,comp,price,change,cap):
+        self.symbol = symbol
+        self.company = comp
+        self.price = price
+        self.change = change
+        self.cap = cap
     def setupUi(self, Form):
         # Form.setObjectName("Form")
         # Form.resize(294, 77)
@@ -319,15 +360,21 @@ class listItem(object):
         self.horizontalLayout_3.setSpacing(5)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.label_2 = QtWidgets.QLabel(parent=Form)
-        self.label_2.setStyleSheet("font-size: 15.6pt;\n"
-"font-weight: 800;\n"
-"color: rgba(255,255,255,1);")
+        self.label_2.setStyleSheet('''
+        QLabel{
+        font-size: 15.6pt;
+        font-weight: 800;
+        color: rgba(255,255,255,0.3);
+        }
+'''
+)
         self.label_2.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label_2.setObjectName("label_2")
         self.horizontalLayout_3.addWidget(self.label_2)
         self.label = QtWidgets.QLabel(parent=Form)
         self.label.setStyleSheet("font-size: 13pt;\n"
-"color: rgba(255,255,255,1);")
+"color: rgba(255,255,255,1);\n"
+)
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label.setObjectName("label")
         self.horizontalLayout_3.addWidget(self.label)
@@ -380,14 +427,32 @@ class listItem(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
-        self.label_2.setText(_translate("Form", "AAPL"))
-        self.label.setText(_translate("Form", "133.13"))
+        self.label_2.setText(_translate("Form", self.symbol))
+        self.label.setText(_translate("Form", self.price))
         self.label_6.setText(_translate("Form", ""))
-        self.label_3.setText(_translate("Form", "Apple Inc."))
-        self.label_4.setText(_translate("Form", "%change"))
-        self.label_5.setText(_translate("Form", "Mkt. Cap"))
+        self.label_3.setText(_translate("Form", self.company))
+        self.label_4.setText(_translate("Form", self.change))
+        self.label_5.setText(_translate("Form", self.cap))
 
-
+    def setHighlight(self):
+        self.label_2.setStyleSheet('''
+        QLabel{
+        font-size: 15.6pt;
+        font-weight: 800;
+        color: rgba(255,255,255,1);
+        }
+'''
+)
+        
+    def unsetHightlight(self):
+        self.label_2.setStyleSheet('''
+        QLabel{
+        font-size: 15.6pt;
+        font-weight: 800;
+        color: rgba(255,255,255,0.3);
+        }
+'''
+)
 
 if __name__ == "__main__":
     import sys
