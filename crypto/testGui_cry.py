@@ -13,7 +13,7 @@ import coinrankcandle as cd
 
 class Ui_Viewer(object):
     def __init__(self) -> None:
-        self.candle_widget = QtWebEngineWidgets.QWebEngineView(self)
+        self.candle_widget = QtWebEngineWidgets.QWebEngineView()
         self.cr = cd.CoinRankingOHLC("Qwsogvtv82FCd", "minute","BTC","Bitcoin")
         self.candle_widget.setHtml(self.cr.show_candlestick())
     def setupUi(self, Viewer):
@@ -292,7 +292,7 @@ class Ui_Viewer(object):
         self.tab.setObjectName("tab")
 
         self.tab.setStyleSheet("background-color: rgba(255,255,255,0.3)")        
-        graph_layout = QtGui.QVBoxLayout()
+        graph_layout = QtWidgets.QVBoxLayout()
         graph_layout.addWidget(self.candle_widget)
         self.tab.setLayout(graph_layout)
 
