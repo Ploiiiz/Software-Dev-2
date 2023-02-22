@@ -253,8 +253,6 @@ class Ui_Viewer(object):
         self.label_9.setObjectName("label_9")
         self.verticalLayout_6.addWidget(self.label_9)
         self.label_8 = QtWidgets.QLabel(parent=self.frame1)
-        self.label_8.setStyleSheet("font-weight: bold;\n"
-"font-size: 13pt;")
         self.label_8.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignTrailing)
         self.label_8.setObjectName("label_8")
         self.verticalLayout_6.addWidget(self.label_8)
@@ -353,6 +351,14 @@ class Ui_Viewer(object):
         self.label_5.setText(_translate("Viewer", full))
         self.label_9.setText(_translate("Viewer", price))
         self.label_8.setText(_translate("Viewer", change))
+        if change[0] == '+':
+            self.label_8.setStyleSheet("font-weight: bold;\n"
+"font-size: 13pt;\n"
+"color: rgba(0,255,71,0.75);")
+        else:
+            self.label_8.setStyleSheet("font-weight: bold;\n"
+"font-size: 13pt;\n"
+"color: rgba(255,0,0,0.75)")
         self.label_7.setText(_translate("Viewer", cap))
     
     def selectionChanged(self):
@@ -367,7 +373,6 @@ class Ui_Viewer(object):
         self.setSelected(cur)
         self.candle_widget.setHtml(self.coin_list[cur].show_candlestick())
         
-    
 
     def datacoin(self):
         data = coinranking.Data()
@@ -418,7 +423,7 @@ class listItem(object):
         self.label_2 = QtWidgets.QLabel(parent=Form) #symbol
         self.label_2.setStyleSheet('''
         QLabel{
-        font-size: 15.6pt;
+        font-size: 18pt;
         font-weight: 800;
         color: rgba(255,255,255,0.3);
         }
@@ -439,18 +444,7 @@ class listItem(object):
         self.label_6.setObjectName("label_6")
         self.label_6.setScaledContents(True)
         self.label_6.setMaximumSize(15,4)
-        if self.arrow == True:
-            self.label_6.setPixmap(QtGui.QPixmap(":/icons/images/pos.png"))
-            self.label.setStyleSheet("font-size: 13pt;\n"
-        "color: #00FF47;\n"
-        )
-
-        else:
-            self.label_6.setPixmap(QtGui.QPixmap(":/icons/images/neg.png"))
-            self.label.setStyleSheet("font-size: 13pt;\n"
-        "color: #FF0000;\n"
-        )
-            
+  
         self.horizontalLayout_3.addWidget(self.label_6)
         self.horizontalLayout_3.setStretch(0, 5)
         self.horizontalLayout_3.setStretch(1, 3)
@@ -460,7 +454,7 @@ class listItem(object):
         self.horizontalLayout_5.setSpacing(0)
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
         self.label_3 = QtWidgets.QLabel(parent=Form) #name
-        self.label_3.setStyleSheet("font-size: 10.4pt;\n"
+        self.label_3.setStyleSheet("font-size: 14.3pt;\n"
 "font-weight: 300;\n"
 "color: rgba(255,255,255,0.8);")
         
@@ -470,17 +464,26 @@ class listItem(object):
         self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.label_4 = QtWidgets.QLabel(parent=Form) #change
-        self.label_4.setStyleSheet("font-size: 7.8pt;\n"
-"font-weight: 300;\n"
-"color: rgba(255,255,255,0.75);")
+        if self.arrow == True:
+            self.label_6.setPixmap(QtGui.QPixmap(":/icons/images/pos.png"))
+            self.label_4.setStyleSheet("font-size: 13pt;\n"
+        "color: rgba(0,255,71,0.75);\n"
+        )
+
+        else:
+            self.label_6.setPixmap(QtGui.QPixmap(":/icons/images/neg.png"))
+            self.label_4.setStyleSheet("font-size: 13pt;\n"
+        "color: rgba(255,0,0,0.75);\n"
+        )
+            
         self.label_4.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label_4.setObjectName("label_4")
         self.verticalLayout_3.addWidget(self.label_4)
         self.label_5 = QtWidgets.QLabel(parent=Form) #marketCap
-        self.label_5.setStyleSheet("font-size: 7.8pt;\n"
+        self.label_5.setStyleSheet("font-size: 12pt;\n"
 "font-weight: 300;\n"
 "color: rgba(255,255,255,0.75);")
-        self.label_5.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.label_5.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignTop)
         self.label_5.setObjectName("label_5")
         self.verticalLayout_3.addWidget(self.label_5)
         self.horizontalLayout_5.addLayout(self.verticalLayout_3)
@@ -503,7 +506,7 @@ class listItem(object):
     def setHighlight(self):
         self.label_2.setStyleSheet('''
         QLabel{
-        font-size: 15.6pt;
+        font-size: 18pt;
         font-weight: 800;
         color: rgba(255,255,255,1);
         }
