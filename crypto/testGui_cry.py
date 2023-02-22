@@ -14,6 +14,7 @@ import coinrankcandle as cd
 class Ui_Viewer(object):
     def __init__(self) -> None:
         self.candle_widget = QtWebEngineWidgets.QWebEngineView()
+        self.coin_list = []
         self.cr = cd.CoinRankingOHLC("Qwsogvtv82FCd", "minute","BTC","Bitcoin")
         self.candle_widget.setHtml(self.cr.show_candlestick())
     def setupUi(self, Viewer):
@@ -82,7 +83,7 @@ class Ui_Viewer(object):
         self.checkBox.setText("")
         self.checkBox.setIconSize(QtCore.QSize(45, 24))
         self.checkBox.setCheckable(True)
-        self.checkBox.setChecked(False)
+        self.checkBox.setChecked(True)
         self.checkBox.setObjectName("checkBox")
         self.horizontalLayout.addWidget(self.checkBox)
         self.label = QtWidgets.QLabel(parent=self.frame)
@@ -176,7 +177,13 @@ class Ui_Viewer(object):
         self.datacoin()
 
         fake_obj = [(crypto[0],crypto[1],"$"+crypto[2],crypto[3],"$"+crypto[5]) for crypto in self.crypto]
+        for i in self.crypto:
+            temp = cd.CoinRankingOHLC(i[6],'minute',i[0],i[1])
+        #     temp.retrieve_data2()
+            self.coin_list.append(temp)
+
         items = [listItem(i[0],i[1],i[2],i[3],i[4]) for i in fake_obj]
+
         widgetlist = []
         #convert to QWidget
         for i in items:
@@ -293,6 +300,7 @@ class Ui_Viewer(object):
 
         self.tab.setStyleSheet("background-color: rgba(255,255,255,0.3)")        
         graph_layout = QtWidgets.QVBoxLayout()
+        graph_layout.setContentsMargins(0,0,0,0)
         graph_layout.addWidget(self.candle_widget)
         self.tab.setLayout(graph_layout)
 
@@ -341,7 +349,7 @@ class Ui_Viewer(object):
         _translate = QtCore.QCoreApplication.translate
         symbol,full,price,change,cap = fake_obj[index]
         self.label_4.setText(_translate("Viewer", symbol))
-        self.label_6.setText(_translate("Viewer", "NASDAQ"))
+        self.label_6.setText(_translate("Viewer", ""))
         self.label_5.setText(_translate("Viewer", full))
         self.label_9.setText(_translate("Viewer", price))
         self.label_8.setText(_translate("Viewer", change))
@@ -355,7 +363,10 @@ class Ui_Viewer(object):
         #print("Selected item: ", current)
         items[past].unsetHightlight()
         items[current].setHighlight()
+        self.coin_list[cur].retrieve_data2()
         self.setSelected(cur)
+        self.candle_widget.setHtml(self.coin_list[cur].show_candlestick())
+        
     
 
     def datacoin(self):
@@ -373,7 +384,7 @@ class Ui_Viewer(object):
         # print(crypto)
         data.close_connection()
 
-        return self.crypto
+        #return self.crypto
     
         
 
@@ -385,6 +396,10 @@ class listItem(object):
         self.price = price
         self.change = change
         self.cap = cap
+        if change[0] == '+':
+            self.arrow = True
+        else: 
+            self.arrow = False
     def setupUi(self, Form):
         # Form.setObjectName("Form")
         # Form.resize(294, 77)
@@ -413,9 +428,7 @@ class listItem(object):
         self.label_2.setObjectName("label_2")
         self.horizontalLayout_3.addWidget(self.label_2)
         self.label = QtWidgets.QLabel(parent=Form) #price
-        self.label.setStyleSheet("font-size: 13pt;\n"
-"color: rgba(255,255,255,1);\n"
-)
+        
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label.setObjectName("label")
         self.horizontalLayout_3.addWidget(self.label)
@@ -424,9 +437,20 @@ class listItem(object):
 "    width: 13px;")
         self.label_6.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_6.setObjectName("label_6")
-        self.label_6.setPixmap(QtGui.QPixmap(":/icons/images/pos.png"))
         self.label_6.setScaledContents(True)
         self.label_6.setMaximumSize(15,4)
+        if self.arrow == True:
+            self.label_6.setPixmap(QtGui.QPixmap(":/icons/images/pos.png"))
+            self.label.setStyleSheet("font-size: 13pt;\n"
+        "color: #00FF47;\n"
+        )
+
+        else:
+            self.label_6.setPixmap(QtGui.QPixmap(":/icons/images/neg.png"))
+            self.label.setStyleSheet("font-size: 13pt;\n"
+        "color: #FF0000;\n"
+        )
+            
         self.horizontalLayout_3.addWidget(self.label_6)
         self.horizontalLayout_3.setStretch(0, 5)
         self.horizontalLayout_3.setStretch(1, 3)
@@ -439,6 +463,7 @@ class listItem(object):
         self.label_3.setStyleSheet("font-size: 10.4pt;\n"
 "font-weight: 300;\n"
 "color: rgba(255,255,255,0.8);")
+        
         self.label_3.setObjectName("label_3")
         self.horizontalLayout_5.addWidget(self.label_3)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
