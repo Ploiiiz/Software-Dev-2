@@ -188,6 +188,7 @@ class Ui_Viewer(object):
         #convert to QWidget
         for i in items:
             container = QtWidgets.QWidget()
+            container.setContentsMargins(0,20,0,0)
             i.setupUi(container)
             widgetlist.append(container)
 	
@@ -235,7 +236,9 @@ class Ui_Viewer(object):
         self.horizontalLayout_3.addWidget(self.label_6)
         self.verticalLayout_5.addLayout(self.horizontalLayout_3)
         self.label_5 = QtWidgets.QLabel(parent=self.frame1)
-        self.label_5.setStyleSheet("font-size: 21pt;")
+        self.label_5.setStyleSheet('''font-size: 21pt;
+
+        ''')
         self.label_5.setAlignment(QtCore.Qt.AlignmentFlag.AlignBottom|QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft)
         self.label_5.setObjectName("label_5")
         self.verticalLayout_5.addWidget(self.label_5)
@@ -425,7 +428,7 @@ class listItem(object):
         QLabel{
         font-size: 18pt;
         font-weight: 800;
-        color: rgba(255,255,255,0.3);
+        color: rgba(255,255,255,0.5);
         }
 '''
 )
@@ -456,7 +459,7 @@ class listItem(object):
         self.label_3 = QtWidgets.QLabel(parent=Form) #name
         self.label_3.setStyleSheet("font-size: 14.3pt;\n"
 "font-weight: 300;\n"
-"color: rgba(255,255,255,0.8);")
+"color: rgba(255,255,255,0.5);")
         
         self.label_3.setObjectName("label_3")
         self.horizontalLayout_5.addWidget(self.label_3)
@@ -512,17 +515,31 @@ class listItem(object):
         }
 '''
 )
+        self.label_3.setStyleSheet("font-size: 14.3pt;\n"
+"font-weight: 300;\n"
+"color: rgba(255,255,255,1);\n"
+
+)
+        self.label_5.setStyleSheet("font-size: 12pt;\n"
+"font-weight: 300;\n"
+"color: rgba(255,255,255,0.75);\n"
+)
         
     def unsetHightlight(self):
         self.label_2.setStyleSheet('''
         QLabel{
-        font-size: 15.6pt;
+        font-size: 18pt;
         font-weight: 800;
-        color: rgba(255,255,255,0.3);
+        color: rgba(255,255,255,0.5);
         }
 '''
 )
-
+        self.label_3.setStyleSheet("font-size: 14.3pt;\n"
+"font-weight: 300;\n"
+"color: rgba(255,255,255,0.5);")
+        self.label_5.setStyleSheet("font-size: 12pt;\n"
+"font-weight: 300;\n"
+"color: rgba(255,255,255,0.75);\n")
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
