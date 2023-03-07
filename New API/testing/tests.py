@@ -90,7 +90,7 @@ class TestAV(unittest.TestCase):
         api_key = "5678"
         symbol = "DEF"
         data = av_caller.monthly(api_key, symbol)
-        self.assertEqual(data, {'data': 'mocked data'})
+        self.assertEqual(data, {'data': 'mocked data'})       
 
     @patch.object(av_caller.TimeSeries, 'get_daily_adjusted')
     def test_renamecol(self, mock_get_daily_adjusted):
@@ -129,7 +129,7 @@ class TestAV(unittest.TestCase):
         api_key = "1234"
         symbol = "ABC"
         data = av_caller.daily(api_key, symbol)
-        data = transformer.rename(data)
+        data = transformer.rename_price(data)
 
         self.assertEqual(list(data.columns), ['open', 'high', 'low', 'close', 'adjusted close', 'volume', 'dividend amount', 'split coefficient'] )
 
@@ -210,5 +210,51 @@ class TestAV(unittest.TestCase):
         )
         mock_cursor.sort.assert_called_once_with('date')
 
+    def test_news(self):
+        mock_response = Mock()
+        mock_response.json.return_value = {
+    "items": "50",
+    "sentiment_score_definition": "x <= -0.35: Bearish; -0.35 < x <= -0.15: Somewhat-Bearish; -0.15 < x < 0.15: Neutral; 0.15 <= x < 0.35: Somewhat_Bullish; x >= 0.35: Bullish",
+    "relevance_score_definition": "0 < x <= 1, with a higher score indicating higher relevance.",
+    "feed": [
+        {
+            "title": "Leave iPhone In The Pocket And Calculate Tips With Apple Watch - Apple  ( NASDAQ:AAPL ) ",
+            "url": "https://www.benzinga.com/news/23/03/31234929/leave-your-iphone-in-pocket-and-still-calculate-tips-slyly-with-your-apple-watch",
+            "time_published": "20230307T122344",
+            "authors": [
+                "Ananya Gairola"
+            ],
+            "summary": "An Apple Inc. AAPL Watch feature that lets you calculate tips is going viral on TikTok.",
+            "banner_image": "https://cdn.benzinga.com/files/images/story/2023/Apple_Watch_Photo_by_Lukas_Gojda_on_Shutterstock.jpeg?width=1200&height=800&fit=crop",
+            "source": "Benzinga",
+            "category_within_source": "News",
+            "source_domain": "www.benzinga.com",
+            "topics": [
+                {
+                    "topic": "Technology",
+                    "relevance_score": "1.0"
+                }
+            ],
+            "overall_sentiment_score": 0.018986,
+            "overall_sentiment_label": "Neutral",
+            "ticker_sentiment": [
+                {
+                    "ticker": "AAPL",
+                    "relevance_score": "0.904419",
+                    "ticker_sentiment_score": "0.083408",
+                    "ticker_sentiment_label": "Neutral"
+                }
+            ]
+        }
+    ]
+}
+        mock_get = Mock(return_value=mock_response)
+
+        with patch('av_caller.requests.request', mock_get):
+            result = av_caller.news(api_key)
+
+        self.assertEqual(result, (mock_response.json()['feed'],mock_response.json()['items']))
+
+    
 if __name__ == "__main__":
     unittest.main()
