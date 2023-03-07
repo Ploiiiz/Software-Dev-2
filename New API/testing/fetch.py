@@ -28,7 +28,7 @@ class NewsSentiment:
         items = json['items']
         feed = json['feed']
         newsfeed = self._format(feed)
-        return (newsfeed,items)
+        return (feed,items)
 
     def _format(self,content):
         return pandas.DataFrame.from_dict(content)
