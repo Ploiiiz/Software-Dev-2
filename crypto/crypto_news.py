@@ -37,7 +37,7 @@ import json
 class NewsSentiment:
     def __init__(self) -> None:
         self.api_key = header.api_AV
-        self.url = 'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=COIN&apikey=' + header.api_AV
+        self.url = 'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&CRYPTO:BTC&apikey=' + header.api_AV
         self.conn = sqlite3.connect("coinranking.db")
         self.cursor = self.conn.cursor()
 
