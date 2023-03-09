@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS {} (
 
     c.execute(query)
     conn.commit()
-    
+  
+
 def store_data(dataframe,meta):
     symbol = meta[0]
     interval = meta[1]
@@ -50,6 +51,27 @@ def store_data(dataframe,meta):
 
     table_name = symbol+'_'+interval+'_price_history'
 
+    dataframe.to_sql(table_name, conn, if_exists='append', index=True)
+
+
+def create_tech_table(symbol, tech, interval):
+    table_name = symbol+'_'+tech+'_'+interval
+    query = '''
+CREATE TABLE IF NOT EXISTS {} (
+    timestamp DATE PRIMARY KEY,
+    {} DECIMAL(10,4) NOT NULL
+);
+'''.format(table_name,tech)
+    c.execute(query)
+    conn.commit()
+
+def store_tech_table(dataframe, meta):
+    symbol = meta[0]
+    tech = meta[1]
+    interval = meta[2]
+    create_tech_table(symbol, tech, interval)
+
+    table_name = symbol+'_'+tech+'_'+interval
     dataframe.to_sql(table_name, conn, if_exists='append', index=True)
 
 

@@ -13,45 +13,84 @@ key = credentials.av_api_key
 
 TEST_SYMBOL = 'IBM'
 
-def load_data(symbol,type='price',interval='daily'):
+def load_data(symbol,type='price',interval='daily',tech='ema'):
     if type == 'price':
         table_name = symbol+'_'+interval+'_price_history'
         if db.table_exists(table_name):# and not db.hastofetch(table_name):
             df = db.load_table(table_name)
             return df
         else:
-            fetch_and_load(symbol, type, interval)
+            fetch_and_store_prices(symbol, interval)
             return load_data(symbol, type, interval)
     elif type == 'news':
         pass
     elif type == 'ti':
-        pass
+        table_name = symbol+'_'+tech.upper()+'_'+interval
+        if db.table_exists(table_name):# and not db.hastofetch
+            df = db.load_table(table_name)
+            return df
+        else:
+            fetch_and_store_tech(symbol, tech, interval)
+            return load_data(symbol, type, interval)
     elif type == 'fd':
         pass
 
-def fetch_and_load(symbol, type, interval):
-    if type == 'price':
+def fetch_and_store_prices(symbol, interval):
+    if interval == 'daily':
+        data, meta = av_caller.daily(key, symbol)
+    elif interval == 'weekly':   
+        data, meta = av_caller.weekly(key, symbol) 
+    elif interval == 'monthly':  
+        data, meta = av_caller.monthly(key, symbol)
+    
+    data, meta = transformer.prettify_price(data, meta)
+    try:
+        db.store_data(data, meta)
+    except IntegrityError:
+        pass   
+        # print('stored data')
+
+def fetch_and_store_tech(symbol, type, interval):
+
+    if type.lower() == 'sma':
         if interval == 'daily':
-            data, meta = av_caller.daily(key, symbol)
+            data, meta = av_caller.sma_daily(key, symbol)
         elif interval == 'weekly':   
-            data, meta = av_caller.weekly(key, symbol) 
+            data, meta = av_caller.sma_weekly(key, symbol) 
         elif interval == 'monthly':  
-            data, meta = av_caller.monthly(key, symbol)
-        
-        data, meta = transformer.prettify_price(data, meta)
-        # print(meta)
-        # print(data)
-        try:
-            db.store_data(data, meta)
-        except IntegrityError:
-            pass   
+            data, meta = av_caller.sma_monthly(key, symbol)
+    elif type.lower() == 'ema':
+        if interval == 'daily':
+            data, meta = av_caller.ema_daily(key, symbol)
+        elif interval == 'weekly':
+            data, meta = av_caller.ema_weekly(key, symbol)
+        elif interval =='monthly':
+            data, meta = av_caller.ema_monthly(key, symbol)
+    elif type.lower() == 'bbands':
+        if interval == 'daily':
+            data, meta = av_caller.bbands_daily(key, symbol)
+        elif interval == 'weekly':
+            data, meta = av_caller.bbands_weekly(key, symbol)
+        elif interval =='monthly':
+            data, meta = av_caller.bbands_monthly(key, symbol)
+    
+    data, meta = transformer.prettify_tech(data, meta)
+    try:
+        db.store_tech_table(data,meta)
+    except IntegrityError:
+        pass
         # print('stored data')
     
-def plotting(symbol):
+def plotting(symbol,full=False):
 
     daily = load_data(symbol,interval='daily')
     weekly = load_data(symbol,interval='weekly')
     monthly = load_data(symbol,interval='monthly')
+    if not full:
+        daily = load_data(symbol,interval='daily').iloc[:(len(daily))//2]
+        weekly = load_data(symbol,interval='weekly').iloc[:(len(weekly))//2]
+        monthly = load_data(symbol,interval='monthly').iloc[:(len(monthly))//2]
+
 
     layout = go.Layout(
     paper_bgcolor='rgba(0,0,0,0)',
@@ -103,7 +142,8 @@ def plotting(symbol):
         ),
     ]
 )
-    fig.show()
+    # fig.show()
+    return fig
 
 def stock_list():
     selected = credentials.selected_top50[:10]
@@ -116,5 +156,5 @@ def stock_list():
     return stocks
 
 def html_plot(symbol):
-    html = pl.to_html(plotting(symbol), include_plotlyjs='cdn',post_script=[js])
+    html = pl.to_html(plotting(symbol), include_plotlyjs='cdn')
     return html

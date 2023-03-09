@@ -1,4 +1,5 @@
 from datetime import datetime
+import pandas as pd
 
 def rename_price_columns(dataframe):
     df = dataframe
@@ -21,7 +22,7 @@ def extract_news_info(news_data):
     sentiment_label = news_data['overall_sentiment_label']
     return headline, url, source, timestamp, tags, tickers, summary, sentiment_score, sentiment_label
 
-def extract_news_feed(items,news_feed):
+def extract_news_feed(news_feed,item):
     news_list = []
     for i in news_feed:
         news_list.append(tuple(extract_news_info(i)))
@@ -67,3 +68,14 @@ def minimal_parse(stock_data):
     totalchange = change_percent+'%'+'('+change+')' 
 
     return (symbol, symbol, '$'+current_price, totalchange, volume)
+
+def prettify_tech(data,meta):
+    data = pd.DataFrame.from_dict(data, 'index')
+    data.index.names = ['timestamp']    
+    meta = pd.DataFrame.from_dict(meta,'index')
+    meta.index = [i[2:] for i in meta.index]
+    symbol = meta[0][0]
+    indicator = meta[0][1].split(" ")[-1].strip('(').strip(')').lower()
+    interval = meta[0][3]
+    metadata = (symbol,indicator, interval)
+    return data,metadata

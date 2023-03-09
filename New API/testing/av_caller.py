@@ -1,5 +1,7 @@
 from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
+from alpha_vantage.fundamentaldata import FundamentalData
+# from alpha_vantage.sectorperformance import SectorPerformance
 import requests
 
 def daily(api_key,symbol,output_format='pandas',outputsize='full'):
@@ -42,6 +44,18 @@ def sma_monthly(api_key,symbol):
     sma = TechIndicators(api_key).get_sma(symbol,'monthly')
     return sma
 
+def ema_daily(api_key,symbol):
+    ema = TechIndicators(api_key).get_ema(symbol,'daily')
+    return ema
+
+def ema_weekly(api_key,symbol):
+    ema = TechIndicators(api_key).get_ema(symbol,'weekly')
+    return ema
+
+def ema_monthly(api_key,symbol):
+    ema = TechIndicators(api_key).get_ema(symbol,'monthly')
+    return ema
+
 def bbands_daily(api_key,symbol):
     bbands = TechIndicators(api_key).get_bbands(symbol,'daily')
     return bbands
@@ -72,3 +86,11 @@ def news(api_key,tickers=None,topics=None,time_from=None,time_to=None,sort=None,
         items = json['items']
         feed = json['feed']
         return (feed,items)
+
+def company_overview(api_key,symbol):
+    comp = FundamentalData(api_key).get_company_overview(symbol)
+    return comp
+
+def income_statement_annual(api_key,symbol):
+    income_statement = FundamentalData(api_key).get_income_statement_annual(symbol)
+    return income_statement
