@@ -214,8 +214,9 @@ class CoinRankingOHLC:
         )
         can = go.Figure(candlestick)
         can.update_layout(title=self.name + " " + "(" + self.symbol + ")",paper_bgcolor="#001f2e",plot_bgcolor='#003951',title_font_color = 'white')
-        js = '''document.body.style.backgroundColor = "#001f2e"; '''        
-        can.update_yaxes(showgrid=False,color = 'white') # update the y-axis according to the interval
+        js = '''document.body.style.backgroundColor = "#001f2e"; '''
+        
+        can.update_yaxes(showgrid=False,color = 'white') 
         can.update_xaxes(showgrid=False,color = 'white')
         # can.show(renderer="browser",post_script=[js])
         can_html = pio.to_html(can, include_plotlyjs='cdn',post_script=[js])
