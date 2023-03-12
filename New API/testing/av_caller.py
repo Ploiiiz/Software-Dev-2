@@ -113,3 +113,7 @@ def news(api_key,tickers=None,topics=None,time_from=None,time_to=None,sort=None,
         feed = json['feed']
         return feed
 
+# Quote Endpoints
+def quote_endpoint(api_key,symbol):
+    quote = TimeSeries(api_key).get_quote_endpoint(symbol)
+    return quote

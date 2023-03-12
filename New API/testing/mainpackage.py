@@ -8,10 +8,20 @@ import plotly.io as pl
 from datetime import datetime
 from sqlite3 import IntegrityError
 import time
+from prettified import *
 
 key = credentials.av_api_key
 
-TEST_SYMBOL = 'IBM'
+def load_quote(symbol):
+    table_name = symbol + '_quotes'
+    try:
+        return df
+    except Exception:
+        data, table_name = prettified_quote_endpoint(symbol)
+        db.store_data(data, table_name)
+        df = db.read_table(table_name)
+        return df
+
 
 def load_data(symbol,type='price',interval='daily',tech='ema'):
     if type == 'price':
@@ -81,22 +91,48 @@ def fetch_and_store_tech(symbol, type, interval):
         pass
         # print('stored data')
     
-def plotting(symbol,full=False):
+def load_price_to_plot(symbol,interval):
+    table_name = symbol + '_' + interval + '_price_history'
+    try:
+        df = db.read_table(table_name)
+        if df.index.name != 'timestamp':
+            data = df.set_index('timestamp')
+        return data
+    except Exception:
+        if interval == 'daily':
+            data, table_name = prettified_daily(symbol)
+            data = data.set_index('timestamp')
+            db.store_data(data, table_name)
+            return data
+        elif interval == 'weekly':
+            data, table_name = prettified_weekly(symbol)
+            data = data.set_index('timestamp')
+            db.store_data(data, table_name)
+            return data
+        elif interval == 'monthly':
+            data, table_name = prettified_monthly(symbol)
+            data = data.set_index('timestamp')
+            db.store_data(data, table_name)
+            return data
+        else: pass
 
-    daily = load_data(symbol,interval='daily')
-    weekly = load_data(symbol,interval='weekly')
-    monthly = load_data(symbol,interval='monthly')
-    if not full:
-        daily = load_data(symbol,interval='daily').iloc[:(len(daily))//2]
-        weekly = load_data(symbol,interval='weekly').iloc[:(len(weekly))//2]
-        monthly = load_data(symbol,interval='monthly').iloc[:(len(monthly))//2]
+
+def plotting(symbol,full=False):
+    table_name = symbol + 'daily_price_history'
+    daily = load_price_to_plot(symbol,'daily')
+    # weekly = load_data(symbol,interval='weekly')
+    # monthly = load_data(symbol,interval='monthly')
+    # if not full:
+    #     daily = load_data(symbol,interval='daily').iloc[:(len(daily))//2]
+    #     weekly = load_data(symbol,interval='weekly').iloc[:(len(weekly))//2]
+    #     monthly = load_data(symbol,interval='monthly').iloc[:(len(monthly))//2]
 
 
     layout = go.Layout(
     paper_bgcolor='rgba(0,0,0,0)',
     plot_bgcolor='rgba(0,42,61,1)',
     )
-    fig = go.Figure(data=[go.Candlestick(x=daily['timestamp'],
+    fig = go.Figure(data=[go.Candlestick(x=daily.index,
                     open=daily['open'],
                     high=daily['high'],
                     low=daily['low'],
@@ -105,42 +141,42 @@ def plotting(symbol,full=False):
     fig.update_xaxes(showgrid=False)
     fig.update_yaxes(showgrid=False)
     fig.update_layout(
-    font=dict(color='white'),
-    updatemenus=[
-        dict(
-            type = "buttons",
-            direction = "left",
-            buttons=[
-            {'label': '1D',
-             'method': 'update',
-             'args': [{'x': [daily['timestamp']],
-                       'open': [daily['open']],
-                       'high': [daily['high']],
-                       'low': [daily['low']],
-                       'close': [daily['close']]}]},
-            {'label': '1W',
-             'method': 'update',
-             'args': [{'x': [weekly['timestamp']],
-                       'open': [weekly['open']],
-                       'high': [weekly['high']],
-                       'low': [weekly['low']],
-                       'close': [weekly['close']]}]},
-            {'label': '1M',
-             'method': 'update',
-             'args': [{'x': [monthly['timestamp']],
-                       'open': [monthly['open']],
-                       'high': [monthly['high']],
-                       'low': [monthly['low']],
-                       'close': [monthly['close']]}]},           
-        ],
-            pad={"r": 10, "t": 10},
-            showactive=True,
-            x=0.04,
-            xanchor="left",
-            y=1.3,
-            yanchor="top"
-        ),
-    ]
+    font=dict(color='white')
+    # updatemenus=[
+    #     dict(
+    #         type = "buttons",
+    #         direction = "left",
+    #         buttons=[
+    #         {'label': '1D',
+    #          'method': 'update',
+    #          'args': [{'x': [daily['timestamp']],
+    #                    'open': [daily['open']],
+    #                    'high': [daily['high']],
+    #                    'low': [daily['low']],
+    #                    'close': [daily['close']]}]},
+    #         {'label': '1W',
+    #          'method': 'update',
+    #          'args': [{'x': [weekly['timestamp']],
+    #                    'open': [weekly['open']],
+    #                    'high': [weekly['high']],
+    #                    'low': [weekly['low']],
+    #                    'close': [weekly['close']]}]},
+    #         {'label': '1M',
+    #          'method': 'update',
+    #          'args': [{'x': [monthly['timestamp']],
+    #                    'open': [monthly['open']],
+    #                    'high': [monthly['high']],
+    #                    'low': [monthly['low']],
+    #                    'close': [monthly['close']]}]},           
+    #     ],
+    #         pad={"r": 10, "t": 10},
+    #         showactive=True,
+    #         x=0.04,
+    #         xanchor="left",
+    #         y=1.3,
+    #         yanchor="top"
+    #     ),
+    # ]
 )
     # fig.show()
     return fig
