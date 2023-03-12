@@ -1,4 +1,5 @@
 from datetime import datetime
+import pandas as pd
 
 def rename_price_columns(dataframe):
     df = dataframe
@@ -7,6 +8,11 @@ def rename_price_columns(dataframe):
     if 'split_coefficient' in df.columns:
         df = df.drop('split_coefficient', axis=1)
     return df
+
+def tech_to_dataframe(data):
+    data = pd.DataFrame.from_dict(data, 'index')
+    data.index.names = ['timestamp']
+    return data
 
 def extract_news_info(news_data):
     headline = news_data['title']
@@ -21,22 +27,12 @@ def extract_news_info(news_data):
     sentiment_label = news_data['overall_sentiment_label']
     return headline, url, source, timestamp, tags, tickers, summary, sentiment_score, sentiment_label
 
-def extract_news_feed(items,news_feed):
+def extract_news_feed(news_feed):
     news_list = []
     for i in news_feed:
         news_list.append(tuple(extract_news_info(i)))
     return news_list
 
-def extract_price_metadata(metadata):
-    interval = metadata['1. Information'].split(' ')[0]
-    symbol = metadata['2. Symbol']
-    last_refreshed = metadata['3. Last Refreshed']
-    return (symbol.upper(), interval.lower(), last_refreshed)
-
-def prettify_price(dataframe, metadata):
-    data = rename_price_columns(dataframe)
-    meta = extract_price_metadata(metadata)
-    return data, meta
 
 def parse_quote(stock_data):
     symbol = stock_data['01. symbol']

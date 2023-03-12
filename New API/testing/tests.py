@@ -13,26 +13,6 @@ import pandas
 import unittest
 from unittest import TestCase, mock
 from unittest.mock import Mock, patch
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
-
-# Assume we have a function that inserts stock data into the database
-def insert_stock_data(db_client, symbol, data):
-    try:
-        db_client.stocks[symbol].insert_one(data)
-        return True
-    except PyMongoError:
-        return False
-
-def read_stock_data(db_client, symbol, start_date, end_date):
-    try:
-        cursor = db_client.stocks[symbol].find(
-            {'date': {'$gte': start_date, '$lte': end_date}}
-        ).sort('date')
-        data = [doc for doc in cursor]
-        return data
-    except PyMongoError:
-        return None
 
 class TestAV(unittest.TestCase):
     @patch.object(av_caller.TimeSeries, 'get_daily_adjusted')
@@ -129,86 +109,26 @@ class TestAV(unittest.TestCase):
         api_key = "1234"
         symbol = "ABC"
         data = av_caller.daily(api_key, symbol)
-        data = transformer.rename_price(data)
+        data = transformer.rename_price_columns(data)
 
-        self.assertEqual(list(data.columns), ['open', 'high', 'low', 'close', 'adjusted close', 'volume', 'dividend amount', 'split coefficient'] )
+        self.assertEqual(list(data.columns), ['open', 'high', 'low', 'close', 'adjusted_close', 'volume', 'dividend_amount'] )
 
-    def test_isvalidBSONdate(self):
-        date = '2023-03-03'
-        self.assertIsInstance(datetime.datetime.strptime(date,'%Y-%m-%d'),bson.datetime.datetime)
-
-    @mock.patch('pymongo.MongoClient')
-    def test_insert_stock_data(self, mock_mongo_client):
-        # create a mock database and collection
-        mock_db = mock_mongo_client().stocks
-        mock_collection = mock_db.__getitem__().insert_one
-        mock_collection.return_value.inserted_id = 1234567890
-
-        # call the function being tested
-        symbol = "ABC"
-        data = {'date': '2022-01-01', 'open': 100, 'high': 110, 'low': 90, 'close': 105}
-        result = insert_stock_data(mock_mongo_client(), symbol, data)
-
-        # assert that the function returns True
-        self.assertTrue(result)
-
-        # assert that the data was inserted into the correct collection
-        mock_db.__getitem__().insert_one.assert_called_once_with(data)
-
-    @mock.patch('pymongo.MongoClient')
-    def test_insert_stock_data_failure(self, mock_mongo_client):
-        # create a mock database and collection
-        mock_db = mock_mongo_client().stocks
-        mock_collection = mock_db.__getitem__().insert_one
-        mock_collection.return_value.inserted_id = 1234567890
-
-        # set the side_effect to return PyMongoError
-        mock_collection.side_effect = PyMongoError
-
-
-        # call the function being tested
-        symbol = "ABC"
-        data = {'date': '2022-01-01', 'open': 100, 'high': 110, 'low': 90, 'close': 105}
-        result = insert_stock_data(mock_mongo_client(), symbol, data)
-
-        # assert that the function returns False
-        self.assertFalse(result)
-
-    @mock.patch('pymongo.MongoClient')
-    def test_read_stock_data(self, mock_mongo_client):
-        # create a mock database and collection
-        mock_db = mock_mongo_client().stocks
-        mock_collection = mock_db.__getitem__()
-        mock_cursor = mock_collection.find.return_value
-        mock_cursor.sort.return_value = mock_cursor
-
-        # define the data to be returned by the mock cursor
-        mock_data = [
-            {'date': '2022-01-01', 'open': 100, 'high': 110, 'low': 90, 'close': 105},
-            {'date': '2022-01-02', 'open': 105, 'high': 120, 'low': 100, 'close': 115},
-            {'date': '2022-01-03', 'open': 115, 'high': 125, 'low': 110, 'close': 120},
-        ]
-        mock_cursor.__iter__.return_value = iter(mock_data)
-
-        # call the function being tested
-        symbol = "ABC"
-        start_date = "2022-01-01"
-        end_date = "2022-01-03"
-        result = read_stock_data(mock_mongo_client(), symbol, start_date, end_date)
-
-        # assert that the function returns the expected data
-        expected_result = [
-            {'date': '2022-01-01', 'open': 100, 'high': 110, 'low': 90, 'close': 105},
-            {'date': '2022-01-02', 'open': 105, 'high': 120, 'low': 100, 'close': 115},
-            {'date': '2022-01-03', 'open': 115, 'high': 125, 'low': 110, 'close': 120},
-        ]
-        self.assertEqual(result, expected_result)
-
-        # assert that the find and sort methods were called with the correct arguments
-        mock_collection.find.assert_called_once_with(
-            {'date': {'$gte': start_date, '$lte': end_date}}
-        )
-        mock_cursor.sort.assert_called_once_with('date')
+    @patch.object(av_caller.FundamentalData, 'get_company_overview')
+    def test_overview_to_dataframe(self, mock_get_company_overview):
+        overview,meta = (
+            {   'Symbol': 'AAPL',
+                'AssetType': 'Common Stock',
+                'Name': 'Apple Inc',
+                'Description': "Apple Inc. is an American multinational technology company that specializes in consumer electronics, computer software, and online services. Apple is the world's largest technology company by revenue (totalling $274.5 billion in 2020) and, since January 2021, the world's most valuable company. As of 2021, Apple is the world's fourth-largest PC vendor by unit sales, and fourth-largest smartphone manufacturer. It is one of the Big Five American information technology companies, along with Amazon, Google, Microsoft, and Facebook.",
+                'CIK': '320193',
+                'Exchange': 'NASDAQ',
+                'Currency': 'USD',
+                'Country': 'USA',
+                'Sector': 'TECHNOLOGY'}
+                ,None)
+        df = transformer.overview_to_dataframe(overview)
+        self.assertEqual(df.index.name,('Symbol'))
+        self.assertEqual(list(df.columns), ['AssetType', 'Name', 'Description', 'CIK', 'Exchange', 'Currency', 'Country', 'Sector'])
 
     def test_news(self):
         mock_response = Mock()
@@ -256,5 +176,9 @@ class TestAV(unittest.TestCase):
         self.assertEqual(result, (mock_response.json()['feed'],mock_response.json()['items']))
 
     
+
+
+
+
 if __name__ == "__main__":
     unittest.main()

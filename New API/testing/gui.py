@@ -15,7 +15,7 @@ class Ui_Viewer(object):
         self.candle_widget = QtWebEngineWidgets.QWebEngineView()
         # self.coin_list = []
         # self.cr = cd.CoinRankingOHLC("Qwsogvtv82FCd", "minute","BTC","Bitcoin")
-        #self.candle_widget.setHtml(main.html_plot('AAPL'))
+        self.candle_widget.setHtml(main.html_plot('AAPL'))
     def setupUi(self, Viewer):
         Viewer.setObjectName("Viewer")
         Viewer.resize(1280, 771)
