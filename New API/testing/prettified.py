@@ -49,7 +49,7 @@ def prettified_overview(symbol):
     '''
     data, meta = av.company_overview(api_key, symbol)
     data = pd.DataFrame.from_dict(data, orient='index').T.set_index('Symbol')
-    table_name = 'companies_overview'
+    table_name = symbol + '_company_overview'
     return data,table_name
 
 def prettified_quarterly_income_statement(symbol):
@@ -223,6 +223,27 @@ def prettified_news_by(ticker):
         :param symbol: The symbol to get the news by for
         :return: The news by dataframe and table name
     '''
-    data= av.news(api_key=api_key,
-                         tickers=ticker)
-    
+    data= av.news(  api_key=api_key,
+                    tickers=ticker)
+
+def prettified_quote_endpoint(symbol):
+    '''
+        Prettifies the quote endpoint for a given symbol
+        :param symbol: The symbol to get the quote endpoint for
+        :return: The quote endpoint dataframe and table name
+    '''
+    data, meta = av.quote_endpoint(api_key,symbol)
+    data = {'Symbol': data['01. symbol'],
+            'Open': float(data['02. open']),
+            'High': float(data['03. high']),
+            'Low': float(data['04. low']),
+            'Price': float(data['05. price']),
+            'Volume': data['06. volume'],
+            'Trading Day': data['07. latest trading day'],
+            'Previous Close': float(data['08. previous close']),
+            'Change': float(data['09. change']),
+            'Change Percent': data['10. change percent'][:-2]+'%'}
+    data = pd.DataFrame([data]).set_index('Symbol')
+    data = data.apply(lambda x: round(x, 3) if x.dtype == 'float64' else x)
+    table_name = symbol + '_quotes'
+    return data, table_name

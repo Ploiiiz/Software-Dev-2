@@ -2,14 +2,9 @@ import sqlite3
 import pandas as pd
 import datetime
 
-conn = sqlite3.connect('testdb.db')
+conn = sqlite3.connect(r'New API\testing\testdb.db')
 c = conn.cursor()
 today = datetime.datetime.now().date
-
-def connect_to_database():
-    conn = sqlite3.connect('my_database.db')
-    c = conn.cursor()
-    return conn, c
 
 def create_price_history_table(table_name):
     query = '''
@@ -31,8 +26,11 @@ CREATE TABLE IF NOT EXISTS {} (
 
 def store_data(dataframe, table_name):
     dataframe.to_sql(table_name, conn, if_exists='replace', index=True, index_label=dataframe.index.name)
-
-
+    conn.commit()
+    
+def read_table(table_name):
+    df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
+    return df
 
 
 
