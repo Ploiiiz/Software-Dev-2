@@ -374,7 +374,7 @@ class Ui_Viewer(object):
         items[current].setHighlight()
         self.coin_list[cur].retrieve_data2()
         self.setSelected(cur)
-        self.candle_widget.setHtml(self.coin_list[cur].show_candlestick())
+        self.candle_widget.setHtml(self.coin_list[cur].show_candlestick_and_linechart())
         
 
     def datacoin(self):

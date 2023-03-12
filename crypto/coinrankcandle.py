@@ -9,6 +9,7 @@ import header
 import sqlite3
 import time
 import plotly.io as pio
+import coinrankingLine as cl
 
 # from searchdata import CoinRankingSearch
 
@@ -125,8 +126,10 @@ class CoinRankingOHLC:
             f"SELECT COUNT(*) FROM ohlc{self.symbol}_{self.interval}")
         result = self.cursor.fetchone()
         print(
-            f"Added {len(new_data)} new records to ohlc{self.symbol}_{self.interval}. Total records: {result[0]}"
-        )
+            f"Added {len(new_data)} new records to ohlc{self.symbol}_{self.interval}. Total records: {result[0]}")
+        cr = cl.CoinPriceHistory(self.uuid, self.symbol,self.name)
+        cr.retrieve_data()
+
 
     def retrieve_data(self):
         response = requests.get(self.url,
@@ -141,6 +144,19 @@ class CoinRankingOHLC:
             lambda x: datetime.datetime.fromtimestamp(x))
         self.df["endingAt"] = self.df["endingAt"].apply(
             lambda x: datetime.datetime.fromtimestamp(x))
+        
+    def pandas_data(self):
+        response = requests.get(self.url,
+                                params=self.params,
+                                headers=self.headers)
+        if response.status_code != 200:
+            print("Error: Could not retrieve data from Coinranking API")
+            exit()
+        data = json.loads(response.text)
+        self.df = pd.DataFrame(data["data"]["ohlc"])
+
+        return self.df
+
 
     def save_to_excel(self):
         self.df.to_excel('coinrankingohlc.xlsx',
@@ -224,12 +240,29 @@ class CoinRankingOHLC:
         )
         fig.add_trace(line_chart, row=2, col=1)
         
-        # Update the layout of the figure
-        fig.update_layout(
-            title=self.name + " " + "(" + self.symbol + ")",
-            paper_bgcolor="#001f2e",
+        
+        js = '''document.body.style.backgroundColor = "#001f2e"; '''
+        fig.update_layout(  title=self.name + " " + "(" + self.symbol + ")",paper_bgcolor="#001f2e",
             plot_bgcolor='#003951',
-            title_font_color='white',
+            title_font_color='white',)
+
+        fig.update_yaxes(
+            showgrid=False,
+            color='white',
+            fixedrange=False,
+            row=1, col=1
+        )
+        fig.update_yaxes(
+            showgrid=False,
+            color='white',
+            fixedrange=False,
+            row=2, col=1
+        )
+        fig.update_xaxes(showgrid=False, color='white', row=2, col=1)
+        fig.update_xaxes(showgrid=False, color='white', row=1, col=1)
+        # Update the layout of the figure
+        fig.update_layout(            
+            
             xaxis=dict(rangeselector=dict(buttons=list([
                 dict(count=1, label='1D', step='day', stepmode='backward'),
                 dict(count=7, label='7D', step='day', stepmode='backward'),
@@ -238,21 +271,16 @@ class CoinRankingOHLC:
                 dict(count=1, label='1Y', step='year', stepmode='backward'),
                 dict(step='all')
             ], ), ),
-                    rangeslider=dict(visible=True),
+                    rangeslider=dict(visible=False),
                     type='date'),
+                   
         )
+        
 
-        js = '''document.body.style.backgroundColor = "#001f2e"; '''
 
-        fig.update_yaxes(
-            showgrid=False,
-            color='white',
-            fixedrange=False,
-            row=1, col=1
-        )
-        fig.update_xaxes(showgrid=False, color='white', row=2, col=1)
-
-        fig.show()
+        # fig.show()
+        fig_html = pio.to_html(fig, include_plotlyjs='cdn', post_script=[js])
+        return fig_html
 
 
     def close_connection(self):
@@ -262,14 +290,15 @@ class CoinRankingOHLC:
 if __name__ == "__main__":
     # cr = CoinRankingOHLC("razxDUgYGNAdQ", "hour", "ETH", "Ethereum")
     cr = CoinRankingOHLC("Qwsogvtv82FCd", "hour","BTC","Bitcoin")
+    cr.pandas_data()
     # cr = CoinRankingOHLC("xz24e0BjL", "minute","SHIB","Shiba Inu")
     # cr.get_symbol()
     # cr = CoinRankingOHLC(uuid, interval, limit)
     # cr.retrieve_data()
     # cr.save_to_database()
-    cr.retrieve_data2()
+    # cr.retrieve_data2()
     #     # cr.save_to_excel()
-    cr.show_candlestick()
+    # cr.show_candlestick()
     # cr.show_candlestick_and_linechart()
 
 #     # cr.close_connection()

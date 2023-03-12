@@ -236,8 +236,17 @@ class CoinPriceHistory:
             )
             
             self.conn.commit()
+        self.conn.close()
 
-       
+    def pandas_data(self):
+        response = requests.get(self.url, params=self.params, headers=self.headers)
+        if response.status_code != 200:
+            print("Error: Could not retrieve data from Coinranking API")
+            exit()
+        data = json.loads(response.text)
+        # print(data["data"]["history"])
+        self.df = pd.DataFrame(data["data"]["history"]) 
+        return self.df
      
     def add_column(self):
         table_name = "ohlc" + self.symbol + "_" + self.interval
@@ -289,13 +298,14 @@ class CoinPriceHistory:
 
 if __name__ == "__main__":
     # 3h 24h 7d 30d 3m 1y 3y 5y
-    cr = CoinPriceHistory("Qwsogvtv82FCd", "BTC","Bitcoin")
-    # cr = CoinPriceHistory("razxDUgYGNAdQ", "ETH", "Ethereum")
+    # cr = CoinPriceHistory("Qwsogvtv82FCd", "BTC","Bitcoin")
+    cr = CoinPriceHistory("razxDUgYGNAdQ", "ETH", "Ethereum")
+    print(cr.pandas_data())
     # cr.get_symbol()
 #     cr = CoinRankingOHLC(uuid, interval, limit)
-    cr.retrieve_data()
+    # cr.retrieve_data()
     # cr.save_to_database()
 #     # cr.save_to_excel()
     # cr.show_linechart()
-    cr.close_connection()
+    # cr.close_connection()
 

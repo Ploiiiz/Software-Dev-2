@@ -38,6 +38,18 @@ class Data:
 
         self.conn.commit()
 
+    def pandas_data(self):
+        response = requests.get(self.url, params=self.params, headers=self.headers)
+
+        if response.status_code != 200:
+            print("Error: Could not retrieve data from Coinranking API")
+            exit()
+
+        data = json.loads(response.text)
+
+        self.df = pd.DataFrame(data['data']['coins'])
+        return self.df
+
     def get_list_symbol(self):
         list_symbol = list(self.df['symbol'])
         return list_symbol
