@@ -246,6 +246,8 @@ class CoinPriceHistory:
         data = json.loads(response.text)
         # print(data["data"]["history"])
         self.df = pd.DataFrame(data["data"]["history"]) 
+        self.df["price"] = pd.to_numeric(self.df["price"])
+        self.df['timestamp']= self.df['timestamp'].apply(lambda x: datetime.datetime.fromtimestamp(x)) 
         return self.df
      
     def add_column(self):
@@ -296,11 +298,13 @@ class CoinPriceHistory:
         self.conn.close()
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # 3h 24h 7d 30d 3m 1y 3y 5y
     # cr = CoinPriceHistory("Qwsogvtv82FCd", "BTC","Bitcoin")
-    cr = CoinPriceHistory("razxDUgYGNAdQ", "ETH", "Ethereum")
-    print(cr.pandas_data())
+    # cr = CoinPriceHistory("razxDUgYGNAdQ", "ETH", "Ethereum")
+    # print(cr.pandas_data())
+    # l = cr.pandas_data()
+    # print(l['timestamp'])
     # cr.get_symbol()
 #     cr = CoinRankingOHLC(uuid, interval, limit)
     # cr.retrieve_data()
