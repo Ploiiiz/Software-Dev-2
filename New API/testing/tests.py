@@ -113,9 +113,22 @@ class TestAV(unittest.TestCase):
 
         self.assertEqual(list(data.columns), ['open', 'high', 'low', 'close', 'adjusted_close', 'volume', 'dividend_amount'] )
 
-    def test_isvalidBSONdate(self):
-        date = '2023-03-03'
-        self.assertIsInstance(datetime.datetime.strptime(date,'%Y-%m-%d'),bson.datetime.datetime)
+    @patch.object(av_caller.FundamentalData, 'get_company_overview')
+    def test_overview_to_dataframe(self, mock_get_company_overview):
+        overview,meta = (
+            {   'Symbol': 'AAPL',
+                'AssetType': 'Common Stock',
+                'Name': 'Apple Inc',
+                'Description': "Apple Inc. is an American multinational technology company that specializes in consumer electronics, computer software, and online services. Apple is the world's largest technology company by revenue (totalling $274.5 billion in 2020) and, since January 2021, the world's most valuable company. As of 2021, Apple is the world's fourth-largest PC vendor by unit sales, and fourth-largest smartphone manufacturer. It is one of the Big Five American information technology companies, along with Amazon, Google, Microsoft, and Facebook.",
+                'CIK': '320193',
+                'Exchange': 'NASDAQ',
+                'Currency': 'USD',
+                'Country': 'USA',
+                'Sector': 'TECHNOLOGY'}
+                ,None)
+        df = transformer.overview_to_dataframe(overview)
+        self.assertEqual(df.index.name,('Symbol'))
+        self.assertEqual(list(df.columns), ['AssetType', 'Name', 'Description', 'CIK', 'Exchange', 'Currency', 'Country', 'Sector'])
 
     def test_news(self):
         mock_response = Mock()
@@ -163,5 +176,9 @@ class TestAV(unittest.TestCase):
         self.assertEqual(result, (mock_response.json()['feed'],mock_response.json()['items']))
 
     
+
+
+
+
 if __name__ == "__main__":
     unittest.main()

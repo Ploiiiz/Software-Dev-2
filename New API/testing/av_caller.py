@@ -3,7 +3,7 @@ from alpha_vantage.techindicators import TechIndicators
 from alpha_vantage.fundamentaldata import FundamentalData
 # from alpha_vantage.sectorperformance import SectorPerformance
 import requests
-
+# Price ----------------------------------------------------------------
 def daily(api_key,symbol,output_format='pandas',outputsize='full'):
     daily = TimeSeries(api_key,output_format).get_daily_adjusted(symbol,outputsize)
     return daily
@@ -16,10 +16,36 @@ def monthly(api_key,symbol,output_format='pandas'):
     monthly = TimeSeries(api_key,output_format).get_monthly_adjusted(symbol)
     return monthly
 
-def quote_endpoint(api_key,symbol):
-    quote = TimeSeries(api_key).get_quote_endpoint(symbol)
-    return quote[0]
+# Fundamentaldata ----------------------------------------------------------------
+def company_overview(api_key,symbol):
+    comp = FundamentalData(api_key).get_company_overview(symbol)
+    return comp
 
+def income_statement_annual(api_key,symbol):
+    income_statement = FundamentalData(api_key).get_income_statement_annual(symbol)
+    return income_statement
+
+def income_statement_quarterly(api_key, symbol):
+    income_statement = FundamentalData(api_key).get_income_statement_quarterly(symbol)
+    return income_statement
+
+def balance_sheet_annual(api_key, symbol):
+    balance_sheet = FundamentalData(api_key).get_balance_sheet_annual(symbol)
+    return balance_sheet
+
+def balance_sheet_quarterly(api_key, symbol):
+    balance_sheet = FundamentalData(api_key).get_balance_sheet_quarterly(symbol)
+    return balance_sheet
+
+def cash_flow_annual(api_key, symbol):
+    cash_flow = FundamentalData(api_key).get_cash_flow_annual(symbol)
+    return cash_flow
+
+def cash_flow_quarterly(api_key, symbol):
+    cash_flow = FundamentalData(api_key).get_cash_flow_quarterly(symbol)
+    return cash_flow
+
+# Technical Indicators -------------------------------------------------------------
 def macd_daily(api_key,symbol):
     macd = TechIndicators(api_key).get_macd(symbol,'daily')
     return macd
@@ -68,6 +94,8 @@ def bbands_monthly(api_key, symbol):
     bbands = TechIndicators(api_key).get_bbands(symbol, 'monthly')
     return bbands
 
+# News ----------------------------------------------------------------
+
 def news(api_key,tickers=None,topics=None,time_from=None,time_to=None,sort=None,limit=None):
         url = "https://www.alphavantage.co/query"
         params = {
@@ -82,15 +110,6 @@ def news(api_key,tickers=None,topics=None,time_from=None,time_to=None,sort=None,
         }
         response = requests.request("GET",url,params=params)
         json = response.json()
-
-        items = json['items']
         feed = json['feed']
-        return (feed,items)
+        return feed
 
-def company_overview(api_key,symbol):
-    comp = FundamentalData(api_key).get_company_overview(symbol)
-    return comp
-
-def income_statement_annual(api_key,symbol):
-    income_statement = FundamentalData(api_key).get_income_statement_annual(symbol)
-    return income_statement

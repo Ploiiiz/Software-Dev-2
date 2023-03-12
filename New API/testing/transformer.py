@@ -9,6 +9,11 @@ def rename_price_columns(dataframe):
         df = df.drop('split_coefficient', axis=1)
     return df
 
+def tech_to_dataframe(data):
+    data = pd.DataFrame.from_dict(data, 'index')
+    data.index.names = ['timestamp']
+    return data
+
 def extract_news_info(news_data):
     headline = news_data['title']
     url = news_data['url']
@@ -22,22 +27,12 @@ def extract_news_info(news_data):
     sentiment_label = news_data['overall_sentiment_label']
     return headline, url, source, timestamp, tags, tickers, summary, sentiment_score, sentiment_label
 
-def extract_news_feed(news_feed,item):
+def extract_news_feed(news_feed):
     news_list = []
     for i in news_feed:
         news_list.append(tuple(extract_news_info(i)))
     return news_list
 
-def extract_price_metadata(metadata):
-    interval = metadata['1. Information'].split(' ')[0]
-    symbol = metadata['2. Symbol']
-    last_refreshed = metadata['3. Last Refreshed']
-    return (symbol.upper(), interval.lower(), last_refreshed)
-
-def prettify_price(dataframe, metadata):
-    data = rename_price_columns(dataframe)
-    meta = extract_price_metadata(metadata)
-    return data, meta
 
 def parse_quote(stock_data):
     symbol = stock_data['01. symbol']
@@ -68,14 +63,3 @@ def minimal_parse(stock_data):
     totalchange = change_percent+'%'+'('+change+')' 
 
     return (symbol, symbol, '$'+current_price, totalchange, volume)
-
-def prettify_tech(data,meta):
-    data = pd.DataFrame.from_dict(data, 'index')
-    data.index.names = ['timestamp']    
-    meta = pd.DataFrame.from_dict(meta,'index')
-    meta.index = [i[2:] for i in meta.index]
-    symbol = meta[0][0]
-    indicator = meta[0][1].split(" ")[-1].strip('(').strip(')').lower()
-    interval = meta[0][3]
-    metadata = (symbol,indicator, interval)
-    return data,metadata
