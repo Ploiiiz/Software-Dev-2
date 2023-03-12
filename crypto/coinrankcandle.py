@@ -92,9 +92,9 @@ class CoinRankingOHLC:
         if result is not None:
             return datetime.datetime.strptime(result, '%Y-%m-%d %H:%M:%S')
         else:
-            one_day = datetime.timedelta(days=1)
+            month = datetime.timedelta(days=180) #=6month
             now = datetime.datetime.now()
-            target = now - one_day
+            target = now - month
 
             formatted_target = target.strftime('%Y-%m-%d %H:%M:%S')
             return datetime.datetime.strptime(formatted_target, '%Y-%m-%d %H:%M:%S')
@@ -105,10 +105,20 @@ class CoinRankingOHLC:
         self.latest_timestamp = self.get_latest_timestamp()
         print(self.latest_timestamp)
         if self.latest_timestamp < now:
-            limit = (now - self.latest_timestamp).total_seconds() // (60)
+            #max 5000
+            # limit = 5000
+            limit = (now - self.latest_timestamp).total_seconds() // (3600)
             print(limit)
-            self.params['limit'] = int(limit)-1
+
+            if limit == 1:
+                return None
+            
+            else:
+                self.params['limit'] = int(limit)-1
+            
             print(self.params['limit'])  # set the limit based on the time difference between the latest timestamp and now
+
+        
         else:
             self.params['limit'] = 1  # set limit to 1 if the latest timestamp is in the future
 
@@ -204,8 +214,9 @@ class CoinRankingOHLC:
         )
         can = go.Figure(candlestick)
         can.update_layout(title=self.name + " " + "(" + self.symbol + ")",paper_bgcolor="#001f2e",plot_bgcolor='#003951',title_font_color = 'white')
-        js = '''document.body.style.backgroundColor = "#001f2e"; '''        
-        can.update_yaxes(showgrid=False,color = 'white') # update the y-axis according to the interval
+        js = '''document.body.style.backgroundColor = "#001f2e"; '''
+        
+        can.update_yaxes(showgrid=False,color = 'white') 
         can.update_xaxes(showgrid=False,color = 'white')
         # can.show(renderer="browser",post_script=[js])
         can_html = pio.to_html(can, include_plotlyjs='cdn',post_script=[js])
@@ -216,14 +227,15 @@ class CoinRankingOHLC:
         self.conn.close()
         
 if __name__ == "__main__":
-    # cr = CoinRankingOHLC("razxDUgYGNAdQ", "minute","ETH","Ethereum")
-    cr = CoinRankingOHLC("Qwsogvtv82FCd", "minute","BTC","Bitcoin")
+    # cr = CoinRankingOHLC("razxDUgYGNAdQ", "hour","ETH","Ethereum")
+    cr = CoinRankingOHLC("Qwsogvtv82FCd", "hour","BTC","Bitcoin")
+    # cr = CoinRankingOHLC("xz24e0BjL", "minute","SHIB","Shiba Inu")
     # cr.get_symbol()
     # cr = CoinRankingOHLC(uuid, interval, limit)
     # cr.retrieve_data()
     # cr.save_to_database()
-    # cr.retrieve_data2()
+    cr.retrieve_data2()
 #     # cr.save_to_excel()
-    cr.show_candlestick()
+    # cr.show_candlestick()
     
 #     # cr.close_connection()

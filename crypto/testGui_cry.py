@@ -15,8 +15,8 @@ class Ui_Viewer(object):
     def __init__(self) -> None:
         self.candle_widget = QtWebEngineWidgets.QWebEngineView()
         self.coin_list = []
-        self.cr = cd.CoinRankingOHLC("Qwsogvtv82FCd", "minute","BTC","Bitcoin")
-        self.candle_widget.setHtml(self.cr.show_candlestick())
+        # self.cr = cd.CoinRankingOHLC("Qwsogvtv82FCd", "hour","BTC","Bitcoin")
+        # self.candle_widget.setHtml(self.cr.show_candlestick())
     def setupUi(self, Viewer):
         Viewer.setObjectName("Viewer")
         Viewer.resize(1280, 771)
@@ -178,8 +178,8 @@ class Ui_Viewer(object):
 
         fake_obj = [(crypto[0],crypto[1],"$"+crypto[2],crypto[3],"$"+crypto[5]) for crypto in self.crypto]
         for i in self.crypto:
-            temp = cd.CoinRankingOHLC(i[6],'minute',i[0],i[1])
-        #     temp.retrieve_data2()
+            temp = cd.CoinRankingOHLC(i[6],'hour',i[0],i[1])
+            temp.retrieve_data2()
             self.coin_list.append(temp)
 
         items = [listItem(i[0],i[1],i[2],i[3],i[4]) for i in fake_obj]

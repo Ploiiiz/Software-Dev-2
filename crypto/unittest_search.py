@@ -49,7 +49,7 @@ class TestSearch(unittest.TestCase):
 
         # assert_called_with เป็นการตรวจสอบว่า Mock Object นั้นได้ถูกเรียกด้วยข้อมูลชุดนี้หรือไม่
         mock_cur.execute.assert_called_with('\n            INSERT INTO coinrankingdata (name, symbol, price, uuid, change)\n            VALUES (?, ?, ?, ?, ?)\n        ', ('Santa', 'ST', 12500, 'santaiscat', 1.25))
-
+    #
        
 
     def test_update_data(self):
