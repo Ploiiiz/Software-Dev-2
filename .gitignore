@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+*.egg
+
+# PyCharm settings
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VSCode settings
+.vscode/
+.settings/
+*.code-workspace
+
+# macOS specific files
+.DS_Store

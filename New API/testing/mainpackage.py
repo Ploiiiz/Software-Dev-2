@@ -15,8 +15,11 @@ key = credentials.av_api_key
 def load_quote(symbol):
     table_name = symbol + '_quotes'
     try:
+        print('loading',table_name)
+        df = db.read_table(table_name)
         return df
     except Exception:
+        print('pull')
         data, table_name = prettified_quote_endpoint(symbol)
         db.store_data(data, table_name)
         df = db.read_table(table_name)
