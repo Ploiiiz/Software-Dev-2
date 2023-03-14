@@ -24,6 +24,8 @@ with open(stocks_file_path,'r') as stocks:
         stock = stock.strip()
         stockslist.append(stock)
 
+cryptolist = []
+
 with open(listing_file_path,'r') as listing:
     statuses = pd.read_csv(listing).set_index('symbol')
 
@@ -382,7 +384,7 @@ class Ui_MainWindow(object):
         
         # self.candlestick_graph = QWebEngineView(self.GraphArea)
         # self.candlestick_graph.setParent(self.GraphArea)
-    
+        self.currencyBox.setDisabled(True)
     def check_box_state_changed(self):
         # Get the state of the checkbox and print it
         self.checked = self.Switch.isChecked()
@@ -393,10 +395,14 @@ class Ui_MainWindow(object):
             self.mode = 'Crypto'
             self.Coins.setText('Crypto')
             self.Stocks.setText('     ')
+            self.SymbolList.clear()
+            self.SymbolList.addItems(cryptolist)
         else:
             self.mode = 'Stocks'
             self.Coins.setText('     ')
             self.Stocks.setText('Stocks')
+            self.SymbolList.clear()
+            self.SymbolList.addItems(stockslist)
     
     def combo_box_index_changed(self):
         self.currency = self.currencyBox.currentText()
@@ -405,13 +411,19 @@ class Ui_MainWindow(object):
     def add_button_clicked(self):
         
         searchsymbol = self.SearchBar.text()
-        if searchsymbol in statuses.index:
-            with open(stocks_file_path,'a') as f:
-                f.write(searchsymbol + '\n')
-                f.close()
-            item = QtWidgets.QListWidgetItem(searchsymbol)
-            name = statuses.loc[searchsymbol, 'name']
-            self.SymbolList.addItem(item)
+
+
+        if self.mode == 'Stocks':
+            if searchsymbol in statuses.index and searchsymbol not in stockslist:
+                with open(stocks_file_path,'a') as f:
+                    f.write(searchsymbol + '\n')
+                    f.close()
+                item = QtWidgets.QListWidgetItem(searchsymbol)
+                name = statuses.loc[searchsymbol, 'name']
+                stockslist.append(searchsymbol)
+                self.SymbolList.addItem(item)
+        elif self.mode == 'Crypto' and searchsymbol not in cryptolist:
+            pass
 
     def update_current_title(self,symbol,df):
         name = statuses.loc[symbol, 'name']
@@ -422,7 +434,7 @@ class Ui_MainWindow(object):
         self.CurrentPrice.setText(df['Price'][0])
         changetext = '{}({})'.format(df['Change'][0],df['Change Percent'][0])
         self.Change.setText(changetext)
-        self.Vol.setText(df['Volume'][0])
+        self.Vol.setText('Vol. ' + df['Volume'][0])
         self.OpenPrice.setText(df['Open'][0])
         self.HighPrice.setText(df['High'][0])
         self.LowPrice.setText(df['Low'][0])
