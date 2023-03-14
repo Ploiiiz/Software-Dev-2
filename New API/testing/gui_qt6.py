@@ -444,6 +444,8 @@ class Ui_MainWindow(object):
 
 
     def retranslateUi(self, MainWindow):
+        boldfont = QtGui.QFont()
+        boldfont.setBold(True)
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.Stocks.setText(_translate("MainWindow", "Stocks"))
@@ -453,12 +455,13 @@ class Ui_MainWindow(object):
         self.pushButton.setText(_translate("MainWindow", "Refresh"))
         self.AddSymbolButton.setText(_translate("MainWindow", "Add"))
         self.OpenText.setText(_translate("MainWindow", "Open"))
-
+        self.OpenText.setFont(boldfont)
         self.HighText.setText(_translate("MainWindow", "High"))
-
+        self.HighText.setFont(boldfont)
         self.LowText.setText(_translate("MainWindow", "Low"))
-
+        self.LowText.setFont(boldfont)
         self.PrevCloseText.setText(_translate("MainWindow", "Previous Close"))
+        self.PrevCloseText.setFont(boldfont)
         self.Tabs.setTabText(self.Tabs.indexOf(self.Price), _translate("MainWindow", "Price"))
         self.Tabs.setTabText(self.Tabs.indexOf(self.News), _translate("MainWindow", "News"))
         self.Tabs.setTabText(self.Tabs.indexOf(self.Spatial), _translate("MainWindow", "Spatial"))

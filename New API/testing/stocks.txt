@@ -8,3 +8,5 @@ BRK-B
 NVDA
 TSLA
 V
+VC
+ABCB

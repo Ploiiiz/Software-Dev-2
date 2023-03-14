@@ -1,8 +1,12 @@
 import sqlite3
 import pandas as pd
 import datetime
+import os
 
-conn = sqlite3.connect(r'New API\testing\testdb.db', check_same_thread=False)
+current_file_path = os.path.abspath(__file__)
+current_dir = os.path.dirname(current_file_path)
+db_file_path = os.path.join(current_dir, 'testdb.db')
+conn = sqlite3.connect(db_file_path, check_same_thread=False)
 c = conn.cursor()
 today = datetime.datetime.now().date
 
