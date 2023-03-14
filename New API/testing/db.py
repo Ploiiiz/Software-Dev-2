@@ -37,6 +37,7 @@ def read_table(table_name):
     print('reading from',table_name)
     query = 'SELECT * FROM "{}"'.format(table_name)
     df = pd.read_sql(query, conn)
+    df = df.set_index(df.columns[0])
 
     #df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
     return df

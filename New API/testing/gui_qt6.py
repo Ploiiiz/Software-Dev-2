@@ -39,6 +39,7 @@ class Ui_MainWindow(object):
         self.currency = 'USD'
         self.stocks = stocklist
         self.coins = coinlist
+        self.candle_widget = QWebEngineView()
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -198,9 +199,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.graphLayout = QtWidgets.QVBoxLayout()
         self.graphLayout.setObjectName("graphLayout")
-        self.GraphWidget = QtWidgets.QWidget(parent=self.Price)
-        self.GraphWidget.setObjectName("GraphWidget")
-        self.graphLayout.addWidget(self.GraphWidget)
+        
+
         self.verticalLayout_2.addLayout(self.graphLayout)
         self.PriceInfoArea = QtWidgets.QHBoxLayout()
         self.PriceInfoArea.setContentsMargins(1, 1, 1, 1)
@@ -385,6 +385,9 @@ class Ui_MainWindow(object):
         # self.candlestick_graph = QWebEngineView(self.GraphArea)
         # self.candlestick_graph.setParent(self.GraphArea)
         self.currencyBox.setDisabled(True)
+        self.candle_widget.setParent(self.Price)
+        self.graphLayout.addWidget(self.candle_widget)
+
     def check_box_state_changed(self):
         # Get the state of the checkbox and print it
         self.checked = self.Switch.isChecked()
@@ -439,19 +442,25 @@ class Ui_MainWindow(object):
         self.HighPrice.setText(df['High'][0])
         self.LowPrice.setText(df['Low'][0])
         self.PrevClosePrice.setText(df['Previous Close'][0])
+        
 
     def symbol_clicked(self):
         current = self.SymbolList.currentItem().text()
+        self.candle_widget.setHtml('')
         self.current_symbol = current
-        self.thread = LoadQuoteThread(current)
-        self.thread.finished.connect(self.handle_load_quote_thread_finished)
-        self.thread.start()
+        self.quote_thread = LoadQuoteThread(current)
+        self.graph_thread = PlottingThread(current)
+        self.quote_thread.finished.connect(self.handle_load_quote_thread_finished)
+        self.graph_thread.finished.connect(self.update_graph)
+        self.quote_thread.start()
+        self.graph_thread.start()
     
     def handle_load_quote_thread_finished(self, df):
         # Update the UI with the results from the worker thread
-        self.update_current_title(self.thread.symbol, df)
+        self.update_current_title(self.quote_thread.symbol, df)
 
-    
+    def update_graph(self, html):
+        self.candle_widget.setHtml(html)
 
 
 
@@ -493,6 +502,17 @@ class LoadQuoteThread(QThread):
         # Call the slow function in the worker thread
         df = main.load_quote(self.symbol).astype(str)
         self.finished.emit(df)
+
+class PlottingThread(QThread):
+    finished = pyqtSignal(str)
+
+    def __init__(self, symbol) :
+        super().__init__()
+        self.symbol = symbol
+    
+    def run(self):
+        html = main.plot_html(self.symbol)
+        self.finished.emit(html)
 
 if __name__ == "__main__":
     import sys

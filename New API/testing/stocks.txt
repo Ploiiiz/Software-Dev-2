@@ -1,2 +1,4 @@
 AAPL
 MSFT
+GOOG
+BRK-B

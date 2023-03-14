@@ -5,6 +5,7 @@ import db
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.io as pl
+from plotly.subplots import make_subplots
 from datetime import datetime
 from sqlite3 import IntegrityError
 import time
@@ -119,81 +120,104 @@ def load_price_to_plot(symbol,interval):
             return data
         else: pass
 
+def load_all_prices(symbol):
 
-def plotting(symbol,full=False):
-    table_name = symbol + 'daily_price_history'
-    daily = load_price_to_plot(symbol,'daily')
-    # weekly = load_data(symbol,interval='weekly')
-    # monthly = load_data(symbol,interval='monthly')
-    # if not full:
-    #     daily = load_data(symbol,interval='daily').iloc[:(len(daily))//2]
-    #     weekly = load_data(symbol,interval='weekly').iloc[:(len(weekly))//2]
-    #     monthly = load_data(symbol,interval='monthly').iloc[:(len(monthly))//2]
+    try:
+        daily_df = db.read_table(symbol+'_daily_price_history')
+        weekly_df = db.read_table(symbol+'_weekly_price_history')
+        monthly_df = db.read_table(symbol+'_monthly_price_history')
 
+        return daily_df, weekly_df, monthly_df
 
+    except Exception:
+        daily, daily_table = prettified_daily(symbol)
+        weekly, weekly_table = prettified_weekly(symbol)
+        monthly, monthly_table = prettified_monthly(symbol)
+        db.store_data(daily, daily_table)
+        db.store_data(weekly, weekly_table)
+        db.store_data(monthly, monthly_table)        
+        return daily, weekly, monthly
+
+def plot_figure(symbol):
+    
+    daily_data, weekly_data, monthly_data = load_all_prices(symbol)
+    
+    fig = make_subplots(rows=2, cols=1, row_heights=[0.7, 0.3], shared_xaxes=True, vertical_spacing=0.1)
+   
     layout = go.Layout(
-    paper_bgcolor='rgba(0,0,0,0)',
-    plot_bgcolor='rgba(0,42,61,1)',
+    paper_bgcolor='rgba(255,255,255,1)',
+    plot_bgcolor='rgba(255,255,255,1)',
+    showlegend=False,
     )
-    fig = go.Figure(data=[go.Candlestick(x=daily.index,
-                    open=daily['open'],
-                    high=daily['high'],
-                    low=daily['low'],
-                    close=daily['close'])],
-                    layout=layout)
+
+    candlestick = go.Candlestick(x=daily_data.index,
+                    open=daily_data['open'],
+                    high=daily_data['high'],
+                    low=daily_data['low'],
+                    close=daily_data['close'],
+                    name='Candlestick')
+    volume = go.Bar(x=daily_data.index, y=daily_data['volume'], name='volume')
+
+
+    updatemenus=[
+        dict(
+            type = "buttons",
+            direction = "left",
+            buttons=[
+            {'label': '1D',
+             'method': 'update',
+             'args': [{'x': [daily_data.index],
+                       'open': [daily_data['open']],
+                       'high': [daily_data['high']],
+                       'low': [daily_data['low']],
+                       'close': [daily_data['close']]}]},
+            {'label': '1W',
+             'method': 'update',
+             'args': [{'x': [weekly_data.index],
+                       'open': [weekly_data['open']],
+                       'high': [weekly_data['high']],
+                       'low': [weekly_data['low']],
+                       'close': [weekly_data['close']]}]},
+            {'label': '1M',
+             'method': 'update',
+             'args': [{'x': [monthly_data.index],
+                       'open': [monthly_data['open']],
+                       'high': [monthly_data['high']],
+                       'low': [monthly_data['low']],
+                       'close': [monthly_data['close']]}]},           
+        ],
+            pad={"r": 10, "t": 10},
+            showactive=True,
+            x=0,
+            xanchor="left",
+            y=1.3,
+            yanchor="top"
+        ),
+    ]
+    fig.add_trace(candlestick,row=1,col=1)
+    fig.add_trace(volume,row=2,col=1)
     fig.update_xaxes(showgrid=False)
     fig.update_yaxes(showgrid=False)
+    fig.update_layout(layout, updatemenus=updatemenus)
     fig.update_layout(
-    font=dict(color='white')
-    # updatemenus=[
-    #     dict(
-    #         type = "buttons",
-    #         direction = "left",
-    #         buttons=[
-    #         {'label': '1D',
-    #          'method': 'update',
-    #          'args': [{'x': [daily['timestamp']],
-    #                    'open': [daily['open']],
-    #                    'high': [daily['high']],
-    #                    'low': [daily['low']],
-    #                    'close': [daily['close']]}]},
-    #         {'label': '1W',
-    #          'method': 'update',
-    #          'args': [{'x': [weekly['timestamp']],
-    #                    'open': [weekly['open']],
-    #                    'high': [weekly['high']],
-    #                    'low': [weekly['low']],
-    #                    'close': [weekly['close']]}]},
-    #         {'label': '1M',
-    #          'method': 'update',
-    #          'args': [{'x': [monthly['timestamp']],
-    #                    'open': [monthly['open']],
-    #                    'high': [monthly['high']],
-    #                    'low': [monthly['low']],
-    #                    'close': [monthly['close']]}]},           
-    #     ],
-    #         pad={"r": 10, "t": 10},
-    #         showactive=True,
-    #         x=0.04,
-    #         xanchor="left",
-    #         y=1.3,
-    #         yanchor="top"
-    #     ),
-    # ]
-)
-    # fig.show()
+            xaxis=dict(rangeselector=dict(buttons=list([
+                # dict(count=1, label='1D', step='day', stepmode='backward'),
+                dict(count=7, label='1W', step='day', stepmode='backward'),
+                dict(count=1, label='1M', step='month', stepmode='backward'),
+                dict(count=3, label='3M', step='month', stepmode='backward'),
+                dict(count=6, label='6M', step='month', stepmode='backward'),
+                dict(count=9, label='9M', step='month', stepmode='backward'),
+                dict(count=1, label='1Y', step='year', stepmode='backward'),
+                dict(count=3, label='3Y', step='year', stepmode='backward'),
+                dict(count=5, label='5Y', step='year', stepmode='backward'),
+                dict(step='all')
+            ], ), ),
+                    rangeslider=dict(visible=False),
+                    type='date'),
+
+        )
     return fig
 
-def stock_list():
-    selected = credentials.selected_top50[:10]
-    stocks = []
-    for i in selected:
-        data = av_caller.quote_endpoint(key,i)
-        time.sleep(3)
-        data = transformer.minimal_parse(data)
-        stocks.append(data)
-    return stocks
-
-def html_plot(symbol):
-    html = pl.to_html(plotting(symbol), include_plotlyjs='cdn')
+def plot_html(symbol):
+    html = pl.to_html(plot_figure(symbol), include_plotlyjs='cdn')
     return html
