@@ -40,6 +40,7 @@ class Ui_MainWindow(object):
         self.stocks = stocklist
         self.coins = coinlist
         self.candle_widget = QWebEngineView()
+        self.df_widget = QtWidgets.QWidget()
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -335,20 +336,28 @@ class Ui_MainWindow(object):
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.gridLayout_7 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_7.setObjectName("gridLayout_7")
-        self.frame = QtWidgets.QFrame(parent=self.scrollAreaWidgetContents)
-        self.frame.setMinimumSize(QtCore.QSize(0, 2000))
-        self.frame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
-        self.frame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
-        self.frame.setObjectName("frame")
-        self.gridLayout_10 = QtWidgets.QGridLayout(self.frame)
-        self.gridLayout_10.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout_10.setObjectName("gridLayout_10")
-        self.gridLayout_9 = QtWidgets.QGridLayout()
-        self.gridLayout_9.setObjectName("gridLayout_9")
-        self.gridLayout_10.addLayout(self.gridLayout_9, 0, 0, 1, 1)
-        self.gridLayout_7.addWidget(self.frame, 0, 0, 1, 1)
+
+        self.verticalLayout = QtWidgets.QVBoxLayout()
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.gridLayout_7.addLayout(self.verticalLayout, 0, 0, 1, 1)
+
+        # self.frame = QtWidgets.QFrame(parent=self.scrollAreaWidgetContents)
+        # self.frame.setMinimumSize(QtCore.QSize(0, 2000))
+        # self.frame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        # self.frame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        # self.frame.setObjectName("frame")
+
+        # self.gridLayout_10 = QtWidgets.QGridLayout(self.frame)
+        # self.gridLayout_10.setContentsMargins(0, 0, 0, 0)
+        # self.gridLayout_10.setObjectName("gridLayout_10")
+        # self.gridLayout_9 = QtWidgets.QGridLayout()
+        # self.gridLayout_9.setObjectName("gridLayout_9")
+        # self.gridLayout_10.addLayout(self.gridLayout_9, 0, 0, 1, 1)
+        # self.gridLayout_7.addWidget(self.frame, 0, 0, 1, 1)
+        
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.gridLayout_5.addWidget(self.scrollArea, 0, 0, 1, 1)
+        
         self.Tabs.addTab(self.Overview, "")
         self.IncomeStatement = QtWidgets.QWidget()
         self.IncomeStatement.setObjectName("IncomeStatement")
@@ -381,12 +390,12 @@ class Ui_MainWindow(object):
             self.SymbolList.addItem(item)
         
         self.SymbolList.itemClicked.connect(self.symbol_clicked)
-        
-        # self.candlestick_graph = QWebEngineView(self.GraphArea)
-        # self.candlestick_graph.setParent(self.GraphArea)
         self.currencyBox.setDisabled(True)
         self.candle_widget.setParent(self.Price)
         self.graphLayout.addWidget(self.candle_widget)
+
+        self.Tabs.tabBarClicked.connect(self.tab_clicked)
+
 
     def check_box_state_changed(self):
         # Get the state of the checkbox and print it
@@ -448,13 +457,19 @@ class Ui_MainWindow(object):
         current = self.SymbolList.currentItem().text()
         self.candle_widget.setHtml('')
         self.current_symbol = current
+
         self.quote_thread = LoadQuoteThread(current)
         self.graph_thread = PlottingThread(current)
+        self.overview_thread = OverviewThread(current)
+
         self.quote_thread.finished.connect(self.handle_load_quote_thread_finished)
         self.graph_thread.finished.connect(self.update_graph)
+        self.overview_thread.finished.connect(self.handle_load_overview_finished)
+
         self.quote_thread.start()
         self.graph_thread.start()
-    
+        self.overview_thread.start()
+
     def handle_load_quote_thread_finished(self, df):
         # Update the UI with the results from the worker thread
         self.update_current_title(self.quote_thread.symbol, df)
@@ -462,6 +477,16 @@ class Ui_MainWindow(object):
     def update_graph(self, html):
         self.candle_widget.setHtml(html)
 
+    def set_overview(self, df):
+        self.verticalLayout.removeWidget(self.df_widget)
+        self.df_widget = DataFrameWidget(df)
+        self.df_widget.setMaximumWidth(700)
+        self.verticalLayout.addWidget(self.df_widget)
+    def handle_load_overview_finished(self, df):
+        self.set_overview(df)
+
+    def tab_clicked(self, index):
+        print("Tab clicked:", self.Tabs.tabText(index))
 
 
     def retranslateUi(self, MainWindow):
@@ -513,6 +538,50 @@ class PlottingThread(QThread):
     def run(self):
         html = main.plot_html(self.symbol)
         self.finished.emit(html)
+
+class OverviewThread(QThread):
+    finished = pyqtSignal(pd.DataFrame)
+
+    def __init__(self, symbol) :
+        super().__init__()
+        self.symbol = symbol
+    
+    def run(self):
+        overview = main.load_overview(self.symbol)
+        self.finished.emit(overview)
+
+class DataFrameWidget(QtWidgets.QWidget):
+    def __init__(self, dataframe):
+        super().__init__()
+        self.df = dataframe
+
+        # set up the font for bold and normal text
+        self.bold_font = QtGui.QFont()
+        self.bold_font.setBold(True)
+        self.bold_font.setPointSize(24)
+
+        self.normal_font = QtGui.QFont()
+        self.normal_font.setPointSize(19)
+
+        # create a layout for the widget
+        self.layout = QtWidgets.QVBoxLayout(self)
+
+        # iterate through the columns of the dataframe
+        for column in self.df.columns:
+            # add the column name as a QLabel with bold font
+            label_column = QtWidgets.QLabel(column)
+            label_column.setFont(self.bold_font)
+            self.layout.addWidget(label_column)
+
+            # add the column values as a QLabel with normal font
+            values = list(self.df[column])
+            for value in values:
+                label_value = QtWidgets.QLabel(str(value))
+                label_value.setFont(self.normal_font)
+                self.layout.addWidget(label_value)
+
+
+
 
 if __name__ == "__main__":
     import sys
