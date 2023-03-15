@@ -1,8 +1,12 @@
 import sqlite3
 import pandas as pd
 import datetime
+import os
 
-conn = sqlite3.connect(r'New API\testing\testdb.db')
+current_file_path = os.path.abspath(__file__)
+current_dir = os.path.dirname(current_file_path)
+db_file_path = os.path.join(current_dir, 'testdb.db')
+conn = sqlite3.connect(db_file_path, check_same_thread=False)
 c = conn.cursor()
 today = datetime.datetime.now().date
 
@@ -25,11 +29,17 @@ CREATE TABLE IF NOT EXISTS {} (
   
 
 def store_data(dataframe, table_name):
+    print('storing in',table_name)
     dataframe.to_sql(table_name, conn, if_exists='replace', index=True, index_label=dataframe.index.name)
     conn.commit()
     
 def read_table(table_name):
-    df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
+    print('reading from',table_name)
+    query = 'SELECT * FROM "{}"'.format(table_name)
+    df = pd.read_sql(query, conn)
+    df = df.set_index(df.columns[0])
+
+    #df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
     return df
 
 
