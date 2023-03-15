@@ -578,6 +578,7 @@ class DataFrameWidget(QtWidgets.QWidget):
             for value in values:
                 label_value = QtWidgets.QLabel(str(value))
                 label_value.setFont(self.normal_font)
+                label_value.setWordWrap(True)
                 self.layout.addWidget(label_value)
 
 
