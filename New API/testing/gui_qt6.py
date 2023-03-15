@@ -461,12 +461,12 @@ class Ui_MainWindow(object):
         self.quote_thread = LoadQuoteThread(current)
         self.graph_thread = PlottingThread(current)
         self.overview_thread = OverviewThread(current)
-        # self.balancesheet_thread = PlotBalanceSheetThread(current)
+        self.balancesheet_thread = PlotBalanceSheetThread(current)
 
         self.quote_thread.finished.connect(self.handle_load_quote_thread_finished)
         self.graph_thread.finished.connect(self.update_graph)
         self.overview_thread.finished.connect(self.handle_load_overview_finished)
-        # self.balancesheet_thread.finished.connect
+        # self.balancesheet_thread.finished.connect(self)
 
         self.quote_thread.start()
         self.graph_thread.start()
@@ -550,7 +550,12 @@ class OverviewThread(QThread):
     
     def run(self):
         overview = main.load_overview(self.symbol)
+        if type(overview) == pd.DataFrame:
+            pass
+        else:
+            overview = pd.DataFrame(columns=['No Overview'])
         self.finished.emit(overview)
+        
 
 class PlotBalanceSheetThread(QThread):
     finished = pyqtSignal(str)

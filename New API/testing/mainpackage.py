@@ -104,6 +104,7 @@ def plot_figure(symbol):
     fig.add_trace(volume,row=2,col=1)
     fig.update_xaxes(showgrid=False)
     fig.update_yaxes(showgrid=False)
+    
     fig.update_layout(layout, updatemenus=updatemenus)
     fig.update_layout(
             xaxis=dict(rangeselector=dict(buttons=list([
@@ -134,9 +135,14 @@ def load_overview(symbol):
         df = db.read_table(table_name)
         return df
     except Exception:
-        df,table_name = prettified_overview(symbol)
-        db.store_data(df,table_name)
-        return df
+        
+        ov_tuple = prettified_overview(symbol)
+        if ov_tuple != 'Invalid symbol':
+            df,table_name = ov_tuple
+            db.store_data(df,table_name)
+            return df
+        else:
+            return 'Overview Not Available'
     
 def plot_balance_sheet(symbol):
     df = load_balance_sheet(symbol)
