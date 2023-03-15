@@ -286,3 +286,24 @@ def prettified_news(ticker):
     else:
         return 'Invalid symbol'
     
+def prettified_quote_endpoint(symbol):
+    '''
+        Prettifies the quote endpoint for a given symbol
+        :param symbol: The symbol to get the quote endpoint for
+        :return: The quote endpoint dataframe and table name
+    '''
+    data, meta = av.quote_endpoint(api_key,symbol)
+    data = {'Symbol': data['01. symbol'],
+            'Open': float(data['02. open']),
+            'High': float(data['03. high']),
+            'Low': float(data['04. low']),
+            'Price': float(data['05. price']),
+            'Volume': data['06. volume'],
+            'Trading Day': data['07. latest trading day'],
+            'Previous Close': float(data['08. previous close']),
+            'Change': float(data['09. change']),
+            'Change Percent': data['10. change percent'][:-2]+'%'}
+    data = pd.DataFrame([data]).set_index('Symbol')
+    data = data.apply(lambda x: round(x, 3) if x.dtype == 'float64' else x)
+    table_name = symbol + '_quotes'
+    return data, table_name
