@@ -137,3 +137,77 @@ def load_overview(symbol):
         df,table_name = prettified_overview(symbol)
         db.store_data(df,table_name)
         return df
+    
+def plot_balance_sheet(symbol):
+    df = load_balance_sheet(symbol)
+    traces = []
+    i = 0
+    for col in df.columns:
+        visible = [True if col == df.columns[0] else False for col in df.columns]
+        trace = go.Bar(x=df.index, y=df[col], name=col, visible=visible[i])
+        traces.append(trace)
+        i+=1
+    
+    layout = go.Layout(title='Balance Sheet',
+                   xaxis=dict(title='Fiscal Ending Date'),
+                   yaxis=dict(title='Value'),
+                   barmode='group',
+                   updatemenus=[{'buttons': [{'args': [{'visible': [True if col == df.columns[0] else False for col in df.columns]},
+                                                        {'title': df.columns[0]}],
+                                             'label': df.columns[0],
+                                             'method': 'update'},
+                                            {'args': [{'visible': [True if col == df.columns[1] else False for col in df.columns]},
+                                                      {'title': df.columns[1]}],
+                                             'label': df.columns[1],
+                                             'method': 'update'},
+                                            {'args': [{'visible': [True if col == df.columns[2] else False for col in df.columns]},
+                                                      {'title': df.columns[2]}],
+                                             'label': df.columns[2],
+                                             'method': 'update'},
+                                            {'args': [{'visible': [True if col == df.columns[3] else False for col in df.columns]},
+                                                      {'title': df.columns[3]}],
+                                             'label': df.columns[3],
+                                             'method': 'update'},
+                                            {'args': [{'visible': [True if col == df.columns[4] else False for col in df.columns]},
+                                                      {'title': df.columns[4]}],
+                                             'label': df.columns[4],
+                                             'method': 'update'},
+                                            {'args': [{'visible': [True if col == df.columns[5] else False for col in df.columns]},
+                                                      {'title': df.columns[5]}],
+                                             'label': df.columns[5],
+                                             'method': 'update'},
+                                            {'args': [{'visible': [True if col == df.columns[6] else False for col in df.columns]},
+                                                      {'title': df.columns[6]}],
+                                             'label': df.columns[6],
+                                             'method': 'update'},
+                                            {'args': [{'visible': [True if col == df.columns[7] else False for col in df.columns]},
+                                                      {'title': df.columns[7]}],
+                                             'label': df.columns[7],
+                                             'method': 'update'},
+                                            {'args': [{'visible': [True if col == df.columns[8] else False for col in df.columns]},
+                                                      {'title': df.columns[8]}],
+                                             'label': df.columns[8],
+                                             'method': 'update'},
+                                            {'args': [{'visible': [True if col == df.columns[9] else False for col in df.columns]},
+                                                      {'title': df.columns[9]}],
+                                             'label': df.columns[9],
+                                             'method': 'update'}],
+                                 'direction': 'left',
+                                 'showactive': True,
+                                 'type': 'buttons'}])
+    fig = go.Figure(data=traces, layout=layout)
+    return fig
+
+def load_balance_sheet(symbol):
+    try:
+        table_name = symbol+'_quarterly_balance_sheet'
+        df = db.read_table(table_name)
+        return df
+    except Exception:
+        df,table_name = prettified_quarterly_balance_sheet(symbol)
+        db.store_data(df,table_name)
+        return df
+
+def plot_bs_html(symbol):
+    html = pl.to_html(plot_balance_sheet(symbol), include_plotlyjs='cdn')
+    return html
