@@ -50,7 +50,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.ListingsArea = QtWidgets.QVBoxLayout()
-        self.ListingsArea.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
+        self.ListingsArea.setSizeConstraint(QtWidgets.SetMaximumSize)
         self.ListingsArea.setContentsMargins(15, 15, 15, 15)
         self.ListingsArea.setSpacing(10)
         self.ListingsArea.setObjectName("ListingsArea")
