@@ -41,6 +41,9 @@ class Ui_MainWindow(object):
         self.coins = coinlist
         self.candle_widget = QWebEngineView()
         self.df_widget = QtWidgets.QWidget()
+        self.balance_sheet_widget = QWebEngineView()
+        self.cash_flow_widget = QWebEngineView()
+        self.income_statement_widget = QWebEngineView()
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -340,6 +343,7 @@ class Ui_MainWindow(object):
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
         self.gridLayout_7.addLayout(self.verticalLayout, 0, 0, 1, 1)
+        
 
         # self.frame = QtWidgets.QFrame(parent=self.scrollAreaWidgetContents)
         # self.frame.setMinimumSize(QtCore.QSize(0, 2000))
@@ -466,7 +470,7 @@ class Ui_MainWindow(object):
         self.quote_thread.finished.connect(self.handle_load_quote_thread_finished)
         self.graph_thread.finished.connect(self.update_graph)
         self.overview_thread.finished.connect(self.handle_load_overview_finished)
-        # self.balancesheet_thread.finished.connect(self)
+        self.balancesheet_thread.finished.connect(self.handle_load_balance_sheet_finished)
 
         self.quote_thread.start()
         self.graph_thread.start()
@@ -489,6 +493,12 @@ class Ui_MainWindow(object):
 
     def tab_clicked(self, index):
         print("Tab clicked:", self.Tabs.tabText(index))
+
+    def set_balance_sheet(self, html):
+        self.balance_sheet_widget.setHtml(html)
+
+    def handle_load_balance_sheet_finished(self, df):
+        self.set_balance_sheet(df)
 
 
     def retranslateUi(self, MainWindow):
