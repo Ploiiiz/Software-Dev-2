@@ -105,6 +105,13 @@ def plot_figure(symbol):
     fig.update_xaxes(showgrid=False)
     fig.update_yaxes(showgrid=False)
     
+    fig.update_xaxes(
+    rangebreaks=[
+        dict(bounds=["sat", "mon"]), #hide weekends
+        dict(values=["2015-12-25", "2016-01-01"])  # hide Christmas and New Year's
+    ]
+)
+
     fig.update_layout(layout, updatemenus=updatemenus)
     fig.update_layout(
             xaxis=dict(rangeselector=dict(buttons=list([
