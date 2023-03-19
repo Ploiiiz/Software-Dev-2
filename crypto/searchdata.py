@@ -1,6 +1,8 @@
 import sqlite3
 from coinrankcandle import CoinRankingOHLC
 from coinrankingLine import CoinPriceHistory
+import pandas as pd
+from coinranking import *
 
 class CoinRankingSearch:
     def __init__(self, find):
@@ -13,28 +15,15 @@ class CoinRankingSearch:
         self.cursor = self.conn.cursor()
         
     def data(self):
-        
-        query = '''
-        SELECT name,symbol,price,uuid,change FROM coinrankingdata WHERE symbol = ?
+        Data().retrieve_data()
+        query = f'''
+        SELECT symbol,name,uuid,change,[24hVolume] FROM coinrankingdata WHERE symbol = '{self.find}'
         '''
-        # Execute the SELECT statement
-        self.cursor.execute(query, (self.find,))
+        data = pd.read_sql_query(query,self.conn)
+        data = data.set_index('symbol')       
 
-        # Iterate through the rows returned by the SELECT statement and print out the data for each column
-        for (name, symbol, price,uuid,change) in self.cursor:
-            self.uuid = uuid
-            self.name = name
-            self.price = price
-            self.change = change
-            print(f'Name: {name}')
-            print(f'Price: {price}')
-            print(f'Change: {change}')
-
-        # Close the cursor and connection
-        self.cursor.close()
-        self.conn.close()
-        
-        
+        return data
+    
     def get_uuid(self):
 
         query = '''
@@ -74,6 +63,22 @@ class CoinRankingSearch:
     
     def get_change(self):
         return self.change
+    
+    def get_24Vol(self):
+        query = '''
+        SELECT [24hVolume] FROM coinrankingdata WHERE symbol = ?
+        '''
+        # Execute the SELECT statement
+        self.cursor.execute(query, (self.find,))
+        row = self.cursor.fetchone()
+        if row:
+            self.vol = row[0]
+            # self.conn.commit()
+            # self.cursor.close()
+            return self.vol
+        else:
+            return None
+        
 
     def insert_data(self):
         
@@ -128,9 +133,9 @@ class CoinRankingSearch:
 
 if __name__ == "__main__":
     # symbol = input("Enter the symbol of the coin you want to search for: ")
-    symbol = "ST"
+    symbol = "BTC"
     search = CoinRankingSearch(symbol)    
-    # search.data()
+    print(search.data())
     # uuid = search.get_uuid()
     
     # search.uuid = "Santaiscat"
@@ -138,7 +143,7 @@ if __name__ == "__main__":
     # search.price = 12500
     # search.change = 0.05
     # search.insert_data()
-    search.delete_data()
+    # search.delete_data()
     # search.update_data()
 
 
@@ -149,11 +154,11 @@ if __name__ == "__main__":
 
         # interval = input("Enter the interval : ")
     # minute hour 8hours day week month
-    interval = "day"
+    # interval = "day"
     # limit = input("Enter the number of candles you want to retrieve: ")
-    limit = 200
+    # limit = 200
     # 3h 24h 7d 30d 3m 1y 3y 5y
-    timePeriod = "24h"
+    # timePeriod = "24h"
     # symbol=search.get_symbol()
     # print(symbol)
 #     ohlc = CoinRankingOHLC(uuid, interval, limit, symbol,name)

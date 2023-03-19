@@ -14,15 +14,17 @@ import pandas as pd
 import numpy as np
 
 
+
+
 # from searchdata import CoinRankingSearch
 
 
 class CoinRankingOHLC:
 
-    def __init__(self, uuid, interval, symbol, name):
+    def __init__(self, uuid, symbol, name):
         self.uuid = uuid
         self.name = name
-        self.interval = interval
+        self.interval = "hour"
         self.symbol = symbol
         self.headers = header.headers
         self.conn = sqlite3.connect("coinranking.db")
@@ -35,6 +37,17 @@ class CoinRankingOHLC:
             "interval": self.interval,
             "limit": None
         }
+
+    def get_lastest_val(self):
+        self.retrieve_data2()
+        query = f"SELECT startingAt,open,high,low,close,price FROM ohlc{self.symbol}_{self.interval} ORDER BY startingAt DESC LIMIT 1;"
+        data = pd.read_sql_query(query,self.conn) 
+        data = pd.DataFrame(data.values, columns=data.columns, index=[self.symbol])
+        return data
+    
+        
+        
+
 
     def check_table(self):
         table_name = "ohlc" + self.symbol + "_" + self.interval
@@ -613,8 +626,9 @@ class CoinRankingOHLC:
 
 
 if __name__ == "__main__":
-    cr = CoinRankingOHLC("razxDUgYGNAdQ", "hour", "ETH", "Ethereum")
-    # cr = CoinRankingOHLC("Qwsogvtv82FCd", "hour","BTC","Bitcoin")
+    cr = CoinRankingOHLC("razxDUgYGNAdQ", "ETH", "Ethereum")
+    print(cr.get_lastest_val())
+    # cr = CoinRankingOHLC("Qwsogvtv82FCd","BTC","Bitcoin")
     # print(cr.pandas_data())
     # cr = CoinRankingOHLC("xz24e0BjL", "minute","SHIB","Shiba Inu")
     # cr.get_symbol()
@@ -628,7 +642,7 @@ if __name__ == "__main__":
     # cr.show_candlestick_with_EMA()
     # cr.EMA()
     # cr.show_candlestick_and_linechart()
-    cr.show_candlestick_with_WMA()
+    # cr.show_candlestick_with_WMA()
 
     # cr.SMA()
     # cr.WMA()

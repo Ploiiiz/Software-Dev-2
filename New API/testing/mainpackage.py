@@ -381,3 +381,4 @@ def load_cash_flow(symbol):
 def plot_cf_html(symbol):
     html = pl.to_html(plot_cash_flow(symbol), include_plotlyjs='cdn')
     return html
+
