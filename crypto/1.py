@@ -11,7 +11,7 @@ from PyQt6.QtCore import QThread, pyqtSignal, QObject
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 import os
 import pandas as pd
-import mainpack as main
+import mainpackage_crypto as main
 
 
 current_file_path = os.path.abspath(__file__)

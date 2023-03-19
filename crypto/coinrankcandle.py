@@ -242,6 +242,7 @@ class CoinRankingOHLC:
 
 
     def show_candlestick(self):
+        self.retrieve_data2()
         query = "SELECT * FROM ohlc" + self.symbol + "_" + self.interval + " ORDER BY startingAt ASC;"
         db = pd.read_sql_query(query, self.conn)
         candlestick = go.Candlestick(
@@ -280,10 +281,10 @@ class CoinRankingOHLC:
         )
         can.update_xaxes(showgrid=False, color='white')        
         # can.show(renderer="browser",post_script=[js])
-        can_html = pio.to_html(can, include_plotlyjs='cdn', post_script=[js])
-        can.show()
+        # can_html = pio.to_html(can, include_plotlyjs='cdn', post_script=[js])
+        # can.show()
 
-        return can_html
+        return can
     
 
     def show_candlestick_with_SMA(self):
@@ -336,10 +337,10 @@ class CoinRankingOHLC:
                                 name='SMA50'))
 
         # can.show(renderer="browser",post_script=[js])
-        can_html = pio.to_html(can, include_plotlyjs='cdn', post_script=[js])
-        can.show()
+        # can_html = pio.to_html(can, include_plotlyjs='cdn', post_script=[js])
+        # can.show()
 
-        return can_html
+        return can
     
 
     def show_candlestick_with_EMA(self):
@@ -392,10 +393,10 @@ class CoinRankingOHLC:
                                 name='EMA50'))
 
         # can.show(renderer="browser",post_script=[js])
-        can_html = pio.to_html(can, include_plotlyjs='cdn', post_script=[js])
-        can.show()
+        # can_html = pio.to_html(can, include_plotlyjs='cdn', post_script=[js])
+        # can.show()
 
-        return can_html
+        return can
     
 
     def show_candlestick_with_WMA(self):
@@ -448,10 +449,10 @@ class CoinRankingOHLC:
                                 name='WMA50'))
 
         # can.show(renderer="browser",post_script=[js])
-        can_html = pio.to_html(can, include_plotlyjs='cdn', post_script=[js])
-        can.show()
+        # can_html = pio.to_html(can, include_plotlyjs='cdn', post_script=[js])
+        # can.show()
 
-        return can_html
+        return can
     
     def add_column(self):
         table_name = "ohlc" + self.symbol + "_" + self.interval
@@ -627,7 +628,7 @@ class CoinRankingOHLC:
 
 if __name__ == "__main__":
     cr = CoinRankingOHLC("razxDUgYGNAdQ", "ETH", "Ethereum")
-    print(cr.get_lastest_val())
+    # print(cr.get_lastest_val())
     # cr = CoinRankingOHLC("Qwsogvtv82FCd","BTC","Bitcoin")
     # print(cr.pandas_data())
     # cr = CoinRankingOHLC("xz24e0BjL", "minute","SHIB","Shiba Inu")
@@ -637,7 +638,7 @@ if __name__ == "__main__":
     # cr.save_to_database()
     # cr.retrieve_data2()
     #     # cr.save_to_excel()
-    # cr.show_candlestick()
+    cr.show_candlestick()
     # cr.show_candlestick_with_SMA()
     # cr.show_candlestick_with_EMA()
     # cr.EMA()
