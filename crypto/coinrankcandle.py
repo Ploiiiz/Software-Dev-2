@@ -12,7 +12,7 @@ import plotly.io as pio
 import coinrankingLine as cl
 import pandas as pd
 import numpy as np
-
+from coinranking import *
 
 
 
@@ -643,14 +643,40 @@ class CoinRankingOHLC:
         fig_html = pio.to_html(fig, include_plotlyjs='cdn', post_script=[js])
         return fig_html
 
+    def change_table_names(self):
+        cur = self.conn.cursor()
+
+        # Get all the table names in the database
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        table_names = cur.fetchall()
+
+        for table in table_names:
+            table_name = table[0]
+            if table_name.startswith("ohlc") and self.symbol in table_name and self.interval in table_name:
+                # Construct the new table name
+                new_table_name = table_name + "_" + "USD"
+
+                # Rename the table
+                cur.execute(f"ALTER TABLE {table_name} RENAME TO {new_table_name}")
+
+        self.conn.commit()
      
 
     def close_connection(self):
         self.conn.close()
 
 
-# if __name__ == "__main__":
-    # cr = CoinRankingOHLC("razxDUgYGNAdQ", "ETH", "Ethereum","month","yhjMzLPhuIDl")
+if __name__ == "__main__":
+    data = Data()
+    data.retrieve_data()
+    uuid = data.get_list_uuid()
+    name = data.get_list_name()
+    symbol = data.get_list_symbol()
+    # print(uuid)
+    for i in range(len(uuid)):
+        # print(uuid[i])
+        cr = CoinRankingOHLC(uuid[i], symbol[i], name[i],"hour","yhjMzLPhuIDl")
+        cr.change_table_names()
     # print(cr.get_lastest_val())
     # cr = CoinRankingOHLC("Qwsogvtv82FCd","BTC","Bitcoin","day","yhjMzLPhuIDl")
     # print(cr.pandas_data())
