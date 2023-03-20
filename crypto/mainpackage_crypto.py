@@ -93,7 +93,7 @@ class CoinRankingOHLC:
                 month = datetime.timedelta(days=180) #=6month
 
             elif self.interval == 'day' or 'week' or 'month':
-                month = datetime.timedelta(days=365) #=2y
+                month = datetime.timedelta(days=365) #=1y
 
             
             now = datetime.datetime.now()
