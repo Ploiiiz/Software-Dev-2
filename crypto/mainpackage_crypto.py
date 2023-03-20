@@ -93,7 +93,7 @@ class CoinRankingOHLC:
                 month = datetime.timedelta(days=180) #=6month
 
             elif self.interval == 'day' or 'week' or 'month':
-                month = datetime.timedelta(days=730) #=2y
+                month = datetime.timedelta(days=365) #=2y
 
             
             now = datetime.datetime.now()
@@ -1284,5 +1284,3 @@ def plot_sentiment_news_html(symbol):
 
 
     
-print(load_all_prices('BTC','USD'))
-
