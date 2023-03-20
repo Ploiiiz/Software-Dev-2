@@ -1,22 +1,37 @@
 import requests
 import json
 import pandas as pd
+import sqlite3
+import header
 
-url = "https://coinranking1.p.rapidapi.com/reference-currencies"
+def fiat():
+    conn = sqlite3.connect("coinranking.db")
+    headers = header.headers        
+    url = "https://coinranking1.p.rapidapi.com/reference-currencies"
+    querystring = {"limit":"50","offset":"0"}
 
-querystring = {"limit":"50","offset":"0"}
+    
 
-headers = {
-	"X-RapidAPI-Key": "7743c81996msh2ad1ff32ce0021ap1d042djsn21d3138a2fb0",
-	"X-RapidAPI-Host": "coinranking1.p.rapidapi.com"
-}
-
-response = requests.request("GET", url, headers=headers, params=querystring)
-if response.status_code != 200:
-            print("Error: Could not retrieve data from Coinranking API")
-            exit()
-data = json.loads(response.text)
-new_data = pd.DataFrame(data['data']["currencies"])
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    if response.status_code != 200:
+                print("Error: Could not retrieve data from Coinranking API")
+                exit()
+    data = json.loads(response.text)
+    new_data = pd.DataFrame(data['data']["currencies"])
+    new_data.to_sql('fiat',conn, if_exists="replace")
+    conn.commit()
+    conn.close()
 
 
-print(new_data)
+def searchfiat(symbol):
+    fiat()
+    conn = sqlite3.connect("coinranking.db")
+    query = f'''
+    SELECT uuid FROM fiat WHERE symbol = '{symbol}'
+    '''
+    data = pd.read_sql_query(query,conn)     
+    data = data.loc[0, 'uuid']
+
+    return data
+
+# print(searchfiat('USD'))

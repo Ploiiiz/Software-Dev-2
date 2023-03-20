@@ -28,15 +28,17 @@ class Data:
         data = json.loads(response.text)
 
         self.df = pd.DataFrame(data['data']['coins'])
-        # print(df)
+        # print(self.df)
 
         self.df.to_excel('coinranking.xlsx', sheet_name='dataCoin', index=True)
 
         cryt = pd.read_excel('coinranking.xlsx')
 
+
         cryt.to_sql("coinrankingdata", self.conn, if_exists="replace")
 
-        self.conn.commit()
+        # self.conn.commit()
+        # self.conn.close()
 
     def pandas_data(self):
         response = requests.get(self.url, params=self.params, headers=self.headers)
@@ -111,8 +113,8 @@ class Data:
         self.conn.close()
 
 
-# data = Data()
-# data.retrieve_data()
+data = Data()
+data.retrieve_data()
 # # data.get_list_change()
 # print(data.get_list_marketcap())
 # data.close_connection()

@@ -3,18 +3,29 @@ from searchdata import *
 from coinranking import *
 import pandas as pd
 from sentiment_news import *
+from fiat import *
 
 
-def load_data(symbol):
+def load_data(symbol,sym_fiat,interval):
     search = CoinRankingSearch(symbol)
-    data = search.data()
-    uuid = data.loc[symbol, 'uuid']
-    name = data.loc[symbol, 'name']
-    can = CoinRankingOHLC(uuid,symbol,name)
-    lastest_val_data = can.get_lastest_val()
     coin_data = search.data()
+    uuid = coin_data.loc[symbol, 'uuid']
+    name = coin_data.loc[symbol, 'name']
+    fiat = searchfiat(sym_fiat)
+    can = CoinRankingOHLC(uuid,symbol,name,interval,fiat)    
+    lastest_val_data = can.get_lastest_val()    
     combined_data = pd.concat([coin_data,lastest_val_data], axis=1)
     return combined_data
+
+
+def load_all_prices(symbol,sym_fiat):   
+    hourly = load_data(symbol,sym_fiat,'hour')
+    daily = load_data(symbol,sym_fiat,'day')
+    weekly = load_data(symbol,sym_fiat,'week')
+    monthly = load_data(symbol,sym_fiat,'month')
+
+    return hourly,daily,weekly,monthly
+
 
 
 def plot_candle(symbol):
@@ -95,6 +106,8 @@ def plot_sentiment_news_html(symbol):
 
 
 
+
+
     
-print(plot_sentiment_news_html('BNB'))
+print(load_all_prices('BTC','USD'))
 

@@ -21,11 +21,12 @@ import numpy as np
 
 class CoinRankingOHLC:
 
-    def __init__(self, uuid, symbol, name):
+    def __init__(self, uuid, symbol, name,interval,fiat):
         self.uuid = uuid
         self.name = name
-        self.interval = "hour"
+        self.interval = interval
         self.symbol = symbol
+        self.fiat = fiat
         self.headers = header.headers
         self.conn = sqlite3.connect("coinranking.db")
         self.cursor = self.conn.cursor()
@@ -33,7 +34,7 @@ class CoinRankingOHLC:
         self.url = "https://coinranking1.p.rapidapi.com/coin/" + str(
             self.uuid) + "/ohlc"
         self.params = {
-            "referenceCurrencyUuid": "yhjMzLPhuIDl",
+            "referenceCurrencyUuid": fiat,
             "interval": self.interval,
             "limit": None
         }
@@ -79,7 +80,14 @@ class CoinRankingOHLC:
         if result is not None:
             return datetime.datetime.strptime(result, '%Y-%m-%d %H:%M:%S')
         else:
-            month = datetime.timedelta(days=180)  #=6month
+
+            if self.interval == 'hour':
+                month = datetime.timedelta(days=180) #=6month
+
+            elif self.interval == 'day' or 'week' or 'month':
+                month = datetime.timedelta(days=730) #=2y
+
+            
             now = datetime.datetime.now()
             target = now - month
 
@@ -93,10 +101,26 @@ class CoinRankingOHLC:
         print(self.latest_timestamp)
         if self.latest_timestamp < now:
             #max 5000
-            # limit = 5000
-            self.limit = (now -
-                          self.latest_timestamp).total_seconds() // (3600)
-            print(self.limit)
+            # limit = 5000 
+            # self.limit = (now - self.latest_timestamp).total_seconds() // (3600)
+            # print(self.limit)
+  
+            if self.interval == 'hour':
+                self.limit = (now - self.latest_timestamp).total_seconds() // (3600)
+                print(self.limit)
+
+            elif self.interval == 'day':
+                self.limit = (now - self.latest_timestamp).total_seconds() // (86400)
+                print(self.limit)
+
+            elif self.interval == 'week':
+                self.limit = (now - self.latest_timestamp).total_seconds() // (86400*7)
+                print(self.limit)
+            
+            elif self.interval == 'month':
+                self.limit = (now - self.latest_timestamp).total_seconds() // (86400*31)
+                print(self.limit)  
+
 
             if self.limit == 1:
                 return None
@@ -109,8 +133,7 @@ class CoinRankingOHLC:
             )  # set the limit based on the time difference between the latest timestamp and now
 
         else:
-            self.params[
-                'limit'] = 1  # set limit to 1 if the latest timestamp is in the future
+            self.params['limit'] = 1  # set limit to 1 if the latest timestamp is in the future
 
     def retrieve_data2(self):
         self.check_table()
@@ -153,7 +176,7 @@ class CoinRankingOHLC:
         self.SMA()
         self.EMA()
         self.WMA()
-        cr = cl.CoinPriceHistory(self.uuid, self.symbol,self.name)
+        cr = cl.CoinPriceHistory(self.uuid, self.symbol,self.name,self.interval,self.fiat)
         cr.retrieve_data()
 
 
@@ -626,10 +649,10 @@ class CoinRankingOHLC:
         self.conn.close()
 
 
-if __name__ == "__main__":
-    cr = CoinRankingOHLC("razxDUgYGNAdQ", "ETH", "Ethereum")
+# if __name__ == "__main__":
+    # cr = CoinRankingOHLC("razxDUgYGNAdQ", "ETH", "Ethereum","month","yhjMzLPhuIDl")
     # print(cr.get_lastest_val())
-    # cr = CoinRankingOHLC("Qwsogvtv82FCd","BTC","Bitcoin")
+    # cr = CoinRankingOHLC("Qwsogvtv82FCd","BTC","Bitcoin","day","yhjMzLPhuIDl")
     # print(cr.pandas_data())
     # cr = CoinRankingOHLC("xz24e0BjL", "minute","SHIB","Shiba Inu")
     # cr.get_symbol()
@@ -638,7 +661,7 @@ if __name__ == "__main__":
     # cr.save_to_database()
     # cr.retrieve_data2()
     #     # cr.save_to_excel()
-    cr.show_candlestick()
+    # cr.show_candlestick()
     # cr.show_candlestick_with_SMA()
     # cr.show_candlestick_with_EMA()
     # cr.EMA()
