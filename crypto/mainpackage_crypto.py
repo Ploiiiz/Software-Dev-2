@@ -46,6 +46,14 @@ class CoinRankingOHLC:
         data = pd.DataFrame(data.values, columns=data.columns, index=[self.symbol])
         return data
     
+    def get_val(self):
+        self.retrieve_data()
+        query = f"SELECT startingAt,open,high,low,close,price FROM ohlc{self.symbol}_{self.interval}_{self.fiat} ORDER BY startingAt DESC ;"
+        data = pd.read_sql_query(query,self.conn) 
+        data = pd.DataFrame(data.values, columns=data.columns)
+        return data
+    
+    
         
         
 
@@ -1102,13 +1110,19 @@ def load_data(symbol,sym_fiat,interval):
     return combined_data
 
 
-def load_all_prices(symbol,sym_fiat):  
-    conn = sqlite3.connect("coinranking.db")
-
-    hourly = pd.read_sql_query("SELECT * FROM ohlc" + symbol + "_" + 'hour' + "_" + sym_fiat + " ORDER BY startingAt DESC;",conn) 
-    daily = pd.read_sql_query("SELECT * FROM ohlc" + symbol + "_" + 'day' + "_" + sym_fiat + " ORDER BY startingAt DESC;",conn) 
-    weekly = pd.read_sql_query("SELECT * FROM ohlc" + symbol + "_" + 'week' + "_" + sym_fiat + " ORDER BY startingAt DESC;",conn) 
-    monthly = pd.read_sql_query("SELECT * FROM ohlc" + symbol + "_" + 'month' + "_" + sym_fiat + " ORDER BY startingAt DESC;",conn) 
+def load_all_prices(symbol,sym_fiat): 
+    search = CoinRankingSearch(symbol)
+    coin_data = search.data()
+    uuid = coin_data.loc[symbol, 'uuid']
+    name = coin_data.loc[symbol, 'name']
+    hourly = CoinRankingOHLC(uuid,symbol,name,'hour',sym_fiat)    
+    hourly = hourly.get_val() 
+    daily = CoinRankingOHLC(uuid,symbol,name,'day',sym_fiat)    
+    daily = daily.get_val() 
+    weekly = CoinRankingOHLC(uuid,symbol,name,'week',sym_fiat)    
+    weekly = weekly.get_val() 
+    monthly = CoinRankingOHLC(uuid,symbol,name,'month',sym_fiat)    
+    monthly = monthly.get_val() 
    
     return hourly,daily,weekly,monthly
 
@@ -1270,5 +1284,5 @@ def plot_sentiment_news_html(symbol):
 
 
     
-print(plot_candle('BTC','USD').show())
+print(load_all_prices('BTC','USD'))
 
