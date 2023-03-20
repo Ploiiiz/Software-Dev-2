@@ -1102,29 +1102,106 @@ def load_data(symbol,sym_fiat,interval):
     return combined_data
 
 
-def load_all_prices(symbol,sym_fiat):   
-    hourly = load_data(symbol,sym_fiat,'hour')
-    daily = load_data(symbol,sym_fiat,'day')
-    weekly = load_data(symbol,sym_fiat,'week')
-    monthly = load_data(symbol,sym_fiat,'month')
+def load_all_prices(symbol,sym_fiat):  
+    conn = sqlite3.connect("coinranking.db")
 
+    hourly = pd.read_sql_query("SELECT * FROM ohlc" + symbol + "_" + 'hour' + "_" + sym_fiat + " ORDER BY startingAt DESC;",conn) 
+    daily = pd.read_sql_query("SELECT * FROM ohlc" + symbol + "_" + 'day' + "_" + sym_fiat + " ORDER BY startingAt DESC;",conn) 
+    weekly = pd.read_sql_query("SELECT * FROM ohlc" + symbol + "_" + 'week' + "_" + sym_fiat + " ORDER BY startingAt DESC;",conn) 
+    monthly = pd.read_sql_query("SELECT * FROM ohlc" + symbol + "_" + 'month' + "_" + sym_fiat + " ORDER BY startingAt DESC;",conn) 
+   
     return hourly,daily,weekly,monthly
 
 
 
-def plot_candle(symbol):
-    search = CoinRankingSearch(symbol)
-    data = search.data()
-    uuid = data.loc[symbol, 'uuid']
-    name = data.loc[symbol, 'name']
-    can = CoinRankingOHLC(uuid,symbol,name)
-    can = can.show_candlestick()
-    return can
+def plot_candle(symbol,sym_fiat):
+    
+    hourly,daily, weekly, monthly = load_all_prices(symbol,sym_fiat)
+        
+    fig = make_subplots(rows=2, cols=1, row_heights=[0.7, 0.3], vertical_spacing=0.1)
+   
+    layout = go.Layout(
+    paper_bgcolor='rgba(255,255,255,1)',
+    plot_bgcolor='rgba(255,255,255,1)',
+    showlegend=False,
+    )
+
+    candlestick = go.Candlestick(x=hourly['startingAt'],
+                    open=hourly['open'],
+                    high=hourly['high'],
+                    low=hourly['low'],
+                    close=hourly['close'],
+                    name='Candlestick')
+  
+    updatemenus=[
+        dict(
+            type = "buttons",
+            direction = "left",
+            buttons=[
+            {'label': '1H',
+             'method': 'update',
+             'args': [{'x': [hourly['startingAt']],
+                       'open': [hourly['open']],
+                       'high': [hourly['high']],
+                       'low': [hourly['low']],
+                       'close': [hourly['close']]}]},
+            {'label': '1D',
+             'method': 'update',
+             'args': [{'x': [daily['startingAt']],
+                       'open': [daily['open']],
+                       'high': [daily['high']],
+                       'low': [daily['low']],
+                       'close': [daily['close']]}]},
+            {'label': '1W',
+             'method': 'update',
+             'args': [{'x': [weekly['startingAt']],
+                       'open': [weekly['open']],
+                       'high': [weekly['high']],
+                       'low': [weekly['low']],
+                       'close': [weekly['close']]}]},
+            {'label': '1M',
+             'method': 'update',
+             'args': [{'x': [monthly['startingAt']],
+                       'open': [monthly['open']],
+                       'high': [monthly['high']],
+                       'low': [monthly['low']],
+                       'close': [monthly['close']]}]},           
+        ],
+            pad={"r": 10, "t": 10},
+            showactive=True,
+            x=0,
+            xanchor="left",
+            y=1.3,
+            yanchor="top"
+        ),
+    ]
+    fig.add_trace(candlestick,row=1,col=1)
+    fig.update_xaxes(showgrid=False)
+    fig.update_yaxes(showgrid=False)
+
+    fig.update_layout(layout, updatemenus=updatemenus)
+    fig.update_layout(
+            xaxis=dict(rangeselector=dict(buttons=list([
+                # dict(count=1, label='1D', step='day', stepmode='backward'),
+                dict(count=7, label='1W', step='day', stepmode='backward'),
+                dict(count=1, label='1M', step='month', stepmode='backward'),
+                dict(count=3, label='3M', step='month', stepmode='backward'),
+                dict(count=6, label='6M', step='month', stepmode='backward'),
+                dict(count=9, label='9M', step='month', stepmode='backward'),
+                dict(count=1, label='1Y', step='year', stepmode='backward'),
+                dict(step='all')
+            ], ), ),
+                    rangeslider=dict(visible=False),
+                    type='date'),
+
+        )
+    return fig
 
 
-def plot_candle_html(symbol):
+
+def plot_candle_html(symbol,interval,sym_fiat):
     js = '''document.body.style.backgroundColor = "#001f2e"; '''   
-    can_html = pio.to_html(plot_candle(symbol), include_plotlyjs='cdn', post_script=[js])
+    can_html = pio.to_html(plot_candle(symbol,interval,sym_fiat), include_plotlyjs='cdn')
     return can_html
 
 
@@ -1193,5 +1270,5 @@ def plot_sentiment_news_html(symbol):
 
 
     
-print(load_all_prices('BTC','EUR'))
+print(plot_candle('BTC','USD').show())
 
