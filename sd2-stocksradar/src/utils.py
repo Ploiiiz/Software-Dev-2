@@ -2,6 +2,7 @@ import plotly.graph_objects as go
 import plotly.io as pl
 from plotly.subplots import make_subplots
 import pandas as pd
+import plotly.express as px
 
 def daybreak(dfd):
     dates = pd.date_range(start=dfd.index[0],
@@ -243,3 +244,21 @@ def plot(dfh,dfd,dfw,dfm):
     # Show the plot
     
     return fig, plot_html(fig)
+
+def spatial(locations_df):
+    fig = px.density_mapbox(locations_df,
+                     lat=locations_df['latitude'],
+                     lon=locations_df['longitude'],
+                     hover_name=locations_df['Location'],
+                     zoom=0.6,
+                     radius=15,
+                     center=dict(lat=0,lon=0),
+                     mapbox_style='carto-positron',
+                     )
+    fig.update_layout(margin=dict(l=0,
+                                r=0,
+                                b=10,
+                                t=10),
+                    )
+    return fig, plot_html(fig)
+

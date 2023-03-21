@@ -313,14 +313,20 @@
          </item>
          <item>
           <widget class="QTabWidget" name="Tabs">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
            <property name="layoutDirection">
             <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
            </property>
            <property name="tabPosition">
             <enum>QTabWidget::North</enum>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>2</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -619,6 +625,9 @@
             </layout>
            </widget>
            <widget class="QWidget" name="Overview">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <attribute name="title">
              <string>Overview</string>
             </attribute>
@@ -637,6 +646,9 @@
              </property>
              <item row="0" column="0">
               <widget class="QScrollArea" name="scrollArea">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="widgetResizable">
                 <bool>true</bool>
                </property>

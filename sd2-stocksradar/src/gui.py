@@ -19,6 +19,7 @@ class Ui_MainWindow(object):
         self.stocks = stocklist
         self.coins = coinlist
         self.candle_widget = QWebEngineView()
+        self.spatial_widget = QWebEngineView()
         self.df_widget = QtWidgets.QWidget()
         self.balance_sheet_widget = QWebEngineView()
         self.cash_flow_widget = QWebEngineView()

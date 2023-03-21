@@ -2,12 +2,18 @@ import yahoo_fin.stock_info as si
 import yfinance as yf
 from alpha_vantage.fundamentaldata import FundamentalData
 from alpha_vantage.timeseries import TimeSeries
+import requests
 import pandas
 from datetime import datetime
 import pandas_ta as ta
 import os
 import db_utils
 from dotenv import load_dotenv
+import spacy
+import pandas as pd
+import geopandas as gpd 
+import geopy 
+from geopy.extra.rate_limiter import RateLimiter
 # sys.path.append('..')
 # from src import data_crypto
 
@@ -174,12 +180,143 @@ def quote(symbol):
     ts = TimeSeries(av_key)
     quote2 = si.get_quote_data(symbol)
     try:
-        quote_info, meta = ts.get_quote_endpoint('AAPL')
         exchange, fullname = quote2['exchange'],quote2['longName']
-        if exchange == 'NMS':
-            exchange = 'NASDAQ'
-        b = list(quote_info.values())
-        opn,high,low,prevclose,price,change,changeper,vol = b[1],b[2],b[3],b[7],b[4],b[8],b[9],b[5]
-        return fullname,exchange,opn,high,low,prevclose,price,change,changeper,vol
+        try:
+            quote_info, meta = ts.get_quote_endpoint(symbol)
+            if exchange == 'NMS':
+                exchange = 'NASDAQ'
+            b = list(quote_info.values())
+            opn,high,low,prevclose,price,change,changeper,vol = b[1],b[2],b[3],b[7],b[4],b[8],b[9],b[5]
+            return fullname,exchange,opn,high,low,prevclose,price,change,changeper,vol
+        except:
+            return fullname,exchange,None,None,None,None,None,None,None,None
     except:
+        return None,None,None,None,None,None,None,None,None,None
+
+def news(api_key,tickers=None,topics=None,time_from=None,time_to=None,sort=None,limit=None):
+    try:
+        url = "https://www.alphavantage.co/query"
+        params = {    
+        "function"  :   "NEWS_SENTIMENT",
+        "apikey"    :   api_key,
+        "tickers"   :   tickers,
+        "topics"    :   topics,
+        "time_from" :   time_from,
+        "time_to"   :   time_to,
+        "sort"      :   sort,
+        "limit"     :   limit
+        }
+        response = requests.request("GET",url,params=params)
+        json = response.json()
+        feed = json['feed']
+        return feed
+    except Exception as e:
         return None
+
+def extract_news_info(news_data):
+    headline = news_data['title']
+    url = news_data['url']
+    source = news_data['source']
+    timestamp = news_data['time_published']
+    timestamp = datetime.strptime(timestamp, '%Y%m%dT%H%M%S')
+    tags = [topic['topic'] for topic in news_data['topics']]
+    tickers = [ticker_sentiment['ticker'] for ticker_sentiment in news_data['ticker_sentiment']]
+    summary = news_data['summary']
+    sentiment_score = news_data['overall_sentiment_score']
+    sentiment_label = news_data['overall_sentiment_label']
+    return headline, url, source, timestamp, tags, tickers, summary, sentiment_score, sentiment_label
+
+def extract_news_feed(news_feed):
+    news_list = []
+    for i in news_feed:
+        news_list.append(tuple(extract_news_info(i)))
+    return news_list
+
+def fetch_news(ticker,limit=200):
+    data = news(api_key=av_key,
+                tickers=ticker,
+                limit=limit)
+    if data is not None:
+        feed = extract_news_feed(data)
+        try:
+            df = pd.DataFrame(feed, columns=['headline', 'url', 'source', 'timestamp', 'tags', 'tickers', 'summary', 'sentiment_score', 'sentiment_label'])
+            return feed,df
+        except:
+            return None
+    else:
+        return None
+    
+def clean(item):
+    if item == 'U.S.':
+        return 'America'
+    else:
+        return item
+def add_coord(df):
+    locations = []
+    try:
+        nlp_wk = spacy.load('en_core_web_lg')
+        for body in df['summary']:
+            doc = nlp_wk(body)
+            locations.extend([[body, ent.text] for ent in doc.ents if (ent.label_ in ['LOC'] or ent.label_ in ['GPE'])])
+        locations_df = pd.DataFrame(locations, columns=['File', 'Location'])
+        locations_df['Location']= locations_df['Location'].apply(clean) 
+        locator = geopy.geocoders.Nominatim(user_agent='mygeocoder')
+        geocode = RateLimiter(locator.geocode, min_delay_seconds=1)
+        locations_df['address'] = locations_df['Location'].apply(geocode)
+        locations_df['coordinates'] = locations_df['address'].apply(lambda loc: tuple(loc.point) if loc else None)
+        locations_df[['latitude', 'longitude', 'altitude']] = pd.DataFrame(locations_df['coordinates'].tolist(), index=locations_df.index)
+        locations_df.latitude.isnull().sum()
+        locations_df = locations_df[pd.notnull(locations_df['latitude'])]
+        return locations_df
+    except OSError:
+        print('python -m spacy download xx_ent_wiki_sm')
+    
+def time_since(datetime_obj):
+    now = datetime.now(datetime_obj.tzinfo)
+    delta = now - datetime_obj
+    days = delta.days
+    seconds = delta.seconds
+    minutes = seconds // 60
+    hours = minutes // 60
+    
+    if days > 0:
+        if days == 1:
+            return "1 day ago"
+        else:
+            return f"{days} days ago"
+    elif hours > 0:
+        if hours == 1:
+            return "1 hour ago"
+        else:
+            return f"{hours} hours ago"
+    elif minutes > 0:
+        if minutes == 1:
+            return "1 minute ago"
+        else:
+            return f"{minutes} minutes ago"
+    else:
+        return "just now"
+
+def load_overview(symbol):
+    try:
+        table_name = symbol+'_company_overview'
+        df = db_utils.read_table(table_name)
+        return df
+    except Exception:
+        
+        ov_tuple = overview(symbol)
+        if ov_tuple != 'Invalid symbol':
+            df,table_name = ov_tuple
+            db_utils.store_data(df,table_name)
+            return df
+        else:
+            return 'Overview Not Available'
+        
+def overview(symbol):
+    try:
+        data, meta = fd.get_company_overview(symbol)
+        data = pd.DataFrame.from_dict(data, orient='index').T.set_index('Symbol')
+        table_name = symbol + '_company_overview'
+        return data,table_name
+    except Exception as e:
+        return e
