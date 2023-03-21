@@ -1,0 +1,10 @@
+name: radarenv
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - ipykernel
+  - pycryptodome
+  - pycryptodomex
+prefix: C:\Users\eSERVICE\.conda\envs\radarenv

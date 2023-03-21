@@ -60,7 +60,7 @@ def get_hourly_data(symbol):
             return None,table_name
     sma50 = df.ta.sma(length=50, append=True)
     # ema200 = df.ta.ema(length=200, append=True)
-    df = df.apply(lambda x: round(x, 3) if x.dtype == 'float64' else x)
+    df = df.apply(lambda x: round(x,6) if x.dtype == 'float64' else x)
     df.columns = [i.lower() for i in df.columns]
     df = df.rename(columns={'sma_50':'SMA_50'})
     df.index = df.index.tz_localize(None)
@@ -77,7 +77,7 @@ def get_daily_data(symbol):
         df = si.get_data(symbol)
         sma50 = df.ta.sma(length=50, append=True)
         ema200 = df.ta.ema(length=200, append=True)
-        df = df.apply(lambda x: round(x, 3) if x.dtype == 'float64' else x)
+        df = df.apply(lambda x: round(x,6) if x.dtype == 'float64' else x)
         return df,table_name
     except:
         try:
@@ -86,7 +86,7 @@ def get_daily_data(symbol):
             df = si.get_data(symbol)
             sma50 = df.ta.sma(length=50, append=True)
             ema200 = df.ta.ema(length=200, append=True)
-            df = df.apply(lambda x: round(x, 3) if x.dtype == 'float64' else x)
+            df = df.apply(lambda x: round(x,6) if x.dtype == 'float64' else x)
             return df,table_name
         except:
             return None,table_name
@@ -102,7 +102,7 @@ def get_weekly_data(symbol):
         df = si.get_data(symbol,interval='1wk')
         sma50 = df.ta.sma(length=50, append=True)
         ema200 = df.ta.ema(length=200, append=True)
-        df = df.apply(lambda x: round(x, 3) if x.dtype == 'float64' else x)
+        df = df.apply(lambda x: round(x,6) if x.dtype == 'float64' else x)
         return df,table_name
     except:
         try:
@@ -111,7 +111,7 @@ def get_weekly_data(symbol):
             df = si.get_data(symbol,interval='1wk')
             sma50 = df.ta.sma(length=50, append=True)
             ema200 = df.ta.ema(length=200, append=True)
-            df = df.apply(lambda x: round(x, 3) if x.dtype == 'float64' else x)
+            df = df.apply(lambda x: round(x,6) if x.dtype == 'float64' else x)
             return df,table_name
         except:
             return None,table_name
@@ -128,7 +128,7 @@ def get_monthly_data(symbol):
         df = si.get_data(symbol, interval='1mo')
         sma50 = df.ta.sma(length=50, append=True)
         ema200 = df.ta.ema(length=200, append=True)
-        df = df.apply(lambda x: round(x, 3) if x.dtype == 'float64' else x)
+        df = df.apply(lambda x: round(x,6) if x.dtype == 'float64' else x)
         return df,table_name
     except:
         try:
@@ -137,7 +137,7 @@ def get_monthly_data(symbol):
             df = si.get_data(symbol, interval='1mo')
             sma50 = df.ta.sma(length=50, append=True)
             ema200 = df.ta.ema(length=200, append=True)
-            df = df.apply(lambda x: round(x, 3) if x.dtype == 'float64' else x)
+            df = df.apply(lambda x: round(x,6) if x.dtype == 'float64' else x)
             return df,table_name
         except:
             return None,table_name
