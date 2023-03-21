@@ -3,6 +3,7 @@ import plotly.io as pl
 from plotly.subplots import make_subplots
 import pandas as pd
 import plotly.express as px
+import numpy as np
 
 def daybreak(dfd):
     dates = pd.date_range(start=dfd.index[0],
@@ -200,7 +201,7 @@ def plot(dfh,dfd,dfw,dfm):
                                             'rangeslider': dict(visible=False)},
                                 'xaxis2': {'range':[dfw.index[w_3y],dfw.index[-1]]},
                                     'yaxis': {'range':[dfw[-156:].low.min()*0.97, dfw[-156:].high.max()*1.03],'domain':y1dom},
-                                'yaxis2': {'range':[dfw[-156:].volume.min(), dfw[-156:].volume.max()*1.1],'domain':y2dom} },
+                                'yaxis2': {'range':[dfw[-156:].volume.min(), dfw[-156:].volume.max()],'domain':y2dom} },
                                     ]), 
                         dict(label='5Y',
                             method='update',
@@ -213,7 +214,7 @@ def plot(dfh,dfd,dfw,dfm):
                                             'rangeslider': dict(visible=False)},
                                 'xaxis2': {'range':[dfm.index[m_5y],dfd.index[-1]]},
                                     'yaxis': {'range':[dfm[-60:].low.min()*0.97, dfm[-60:].high.max()*1.03],'domain':y1dom},
-                                'yaxis2': {'range':[dfm[-60:].volume.min(), dfm[-60:].volume.max()*1.1],'domain':y2dom} },
+                                'yaxis2': {'range':[dfm[-60:].volume.min(), dfm[-60:].volume.max()],'domain':y2dom} },
                                     ]),
                         dict(label='All',
                             method='update',
@@ -226,7 +227,7 @@ def plot(dfh,dfd,dfw,dfm):
                                             'rangeslider': dict(visible=False)},
                                 'xaxis2': {'range':[dfm.index[0],dfd.index[-1]]},
                                 'yaxis': {'range':[dfm.low.min()*0.97, dfm.high.max()*1.03],'domain':y1dom},
-                                'yaxis2': {'range':[dfm.volume.min(), dfm.volume.max()*1.05],'domain':y2dom} },
+                                'yaxis2': {'range':[dfm.volume.min(), dfm.volume.max()],'domain':y2dom} },
                                     ])
 
                                 ]
@@ -261,4 +262,147 @@ def spatial(locations_df):
                                 t=10),
                     )
     return fig, plot_html(fig)
+
+def sector(colored_df):
+    df = colored_df
+    fig = go.Figure(go.Treemap(labels=df['sector'], values=df['cp'], parents=df['parents'], marker_colors=df['color'],
+                customdata=np.stack((df['sector'],df['sign']),axis=1),
+                hovertemplate='<b>%{customdata[0]} </b> <br> Change: %{customdata[1]}%{value}%<br>',name=''))
+
+    # update the layout of the treemap
+    fig.update_layout(
+        margin=dict(l=0,
+                    r=0,
+                    b=10,
+                    t=10),
+    )
+
+    return fig, plot_html(fig)
+
+def balance_sheet(balance_sheet_df):
+        
+    data=[
+        go.Bar(name='Total Assets', x=balance_sheet_df['fiscalDateEnding'], y=balance_sheet_df['totalAssets'],visible=True,marker_color='forestgreen'),
+        go.Bar(name='Total Liabilities', x=balance_sheet_df['fiscalDateEnding'], y=balance_sheet_df['totalLiabilities'],visible=False,marker_color='darksalmon'),
+        go.Bar(name='Total Shareholder Equity', x=balance_sheet_df['fiscalDateEnding'], y=balance_sheet_df['totalShareholderEquity'],visible=False,marker_color='darkturquoise'),
+    ]
+    updatemenus = [{
+        'active':0,
+        'direction':'left',
+        'y':1.15,
+        'yanchor':'top',
+        'xanchor':'left',
+        'type': 'buttons',
+        'buttons': [
+        dict(label='Total Assets',
+            method='update',
+            args=[dict(visible=[True,False,False]
+            )]),
+        dict(label='Total Liabilities',
+            method='update',
+            args=[dict(visible=[False,True,False])]),
+        dict(label='Total Shareholder Equity',
+            method='update',
+            args=[dict(visible=[False,False,True])]),
+        dict(label='All',
+            method='update',
+            args=[dict(visible=[True,True,True])]),
+        ]
+    }]
+    fig = go.Figure(data=data)
+    fig.update_layout(barmode='group',
+                    yaxis=dict(type='linear'),
+                    updatemenus=updatemenus,
+                    title_text='Balance Sheet (USD)',
+                    margin=dict(l=0,r=0,t=110,b=20))
+    return fig,plot_html(fig)
+
+
+def cash_flow(cash_flow_df):
+        
+    data=[
+        go.Bar(name='Operating', x=cash_flow_df['fiscalDateEnding'], y=cash_flow_df['operatingCashflow'],visible=True,marker_color='#1B065E'),
+        go.Bar(name='Investment', x=cash_flow_df['fiscalDateEnding'], y=cash_flow_df['cashflowFromInvestment'],visible=False,marker_color='#FF47DA'),
+        go.Bar(name='Financing', x=cash_flow_df['fiscalDateEnding'], y=cash_flow_df['cashflowFromFinancing'],visible=False,marker_color='#C44900'),
+        go.Bar(name='Change In Cash and Equivalents', x=cash_flow_df['fiscalDateEnding'], y=cash_flow_df['changeInCashAndCashEquivalents'],visible=False,marker_color='#426B69'),
+    ]
+    updatemenus = [{
+        'active':0,
+        'direction':'left',
+        'y':1.15,
+        'yanchor':'top',
+        'xanchor':'left',
+        'type': 'buttons',
+        'buttons': [
+        dict(label='Operating Cash Flow',
+            method='update',
+            args=[dict(visible=[True,False,False,False]
+            )]),
+        dict(label='Investment Cash Flow',
+            method='update',
+            args=[dict(visible=[False,True,False,False])]),
+        dict(label='Financing Cash Flow',
+            method='update',
+            args=[dict(visible=[False,False,True,False])]),
+        dict(label='Change In Cash and Equivalents',
+            method='update',
+            args=[dict(visible=[False,False,False,True])]),
+        dict(label='All',
+            method='update',
+            args=[dict(visible=[True,True,True,True])]),
+        ]
+    }]
+    fig = go.Figure(data=data)
+    fig.update_layout(barmode='group',
+                    yaxis=dict(type='linear'),
+                    updatemenus=updatemenus,
+                    title_text='Cash Flow (USD)',
+                    margin=dict(l=0,r=0,t=110,b=20))
+    return fig,plot_html(fig)
+
+def income_statement(income_statement_df):
+        
+    data=[
+        go.Bar(name='Gross Profit', x=income_statement_df['fiscalDateEnding'], y=income_statement_df['grossProfit'],visible=True,marker_color='#87C38F'),
+        go.Bar(name='Total Revenue', x=income_statement_df['fiscalDateEnding'], y=income_statement_df['totalRevenue'],visible=False,marker_color='#226F54'),
+        go.Bar(name='Cost of Revenue', x=income_statement_df['fiscalDateEnding'], y=income_statement_df['costOfRevenue'],visible=False,marker_color='#DA2C38'),
+        go.Bar(name='Operating Income', x=income_statement_df['fiscalDateEnding'], y=income_statement_df['operatingIncome'],visible=False,marker_color='#6369D1'),
+        go.Bar(name='Net Income', x=income_statement_df['fiscalDateEnding'], y=income_statement_df['netIncome'],visible=False,marker_color='#0A2342'),
+    ]
+    updatemenus = [{
+        'active':0,
+        'direction':'left',
+        'y':1.15,
+        'yanchor':'top',
+        'xanchor':'left',
+        'type': 'buttons',
+        'buttons': [
+        dict(label='Gross Profit',
+            method='update',
+            args=[dict(visible=[True,False,False,False,False]
+            )]),
+        dict(label='Total Revenue',
+            method='update',
+            args=[dict(visible=[False,True,False,False,False])]),
+        dict(label='Cost of Revenue',
+            method='update',
+            args=[dict(visible=[False,False,True,False,False])]),
+        dict(label='Operating Income',
+            method='update',
+            args=[dict(visible=[False,False,False,True,False])]),
+        dict(label='Net Income',
+            method='update',
+            args=[dict(visible=[False,False,False,False,True])]),
+        dict(label='All',
+            method='update',
+            args=[dict(visible=[True,True,True,True,True])]),
+        ]
+    }]
+    fig = go.Figure(data=data)
+    fig.update_layout(barmode='group',
+                    yaxis=dict(type='linear'),
+                    updatemenus=updatemenus,
+                    title_text='Income Statement (USD)',
+                    margin=dict(l=0,r=0,t=110,b=20))
+    return fig,plot_html(fig)
 

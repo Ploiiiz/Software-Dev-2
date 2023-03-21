@@ -1,11 +1,12 @@
 import sys
 sys.path.append('..')
 from PyQt6 import QtCore, QtGui, QtWidgets, uic
-from PyQt6.QtCore import QThread, pyqtSignal, QObject
+from PyQt6.QtCore import QThread, pyqtSignal, QObject, QUrl, Qt
 from gui import Ui_MainWindow
 import data,utils,db_utils
 import os
 import webbrowser
+import pandas as pd
 
 app = QtWidgets.QApplication(sys.argv)
 MainWindow = QtWidgets.QMainWindow()
@@ -38,6 +39,29 @@ loadinghtml = '''
 </div>
 </body>
 </html>'''
+nodatahtml = '''
+                <html>
+    <head>
+        <style>
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .loading-text {
+            font-size: 3em;
+            font-weight: bold;
+            font-family: sans-serif;
+        }
+        </style>
+    </head>
+    <body>
+        <div class="center">
+        <div class="loading-text">No Data Available for this symbol</div>
+        </div>
+    </body>
+    </html>'''
 
 ui = Ui_MainWindow(stockslist,cryptolist)
 ui.setupUi(MainWindow)
@@ -51,6 +75,43 @@ ui.GraphWidget.setLayout(GraphLayout)
 SpatialLayout = QtWidgets.QVBoxLayout()
 SpatialLayout.addWidget(ui.spatial_widget)
 ui.SpatialGraphWidget.setLayout(SpatialLayout)
+
+# Sector
+SectorLayout = QtWidgets.QVBoxLayout()
+SectorLayout.addWidget(ui.sector_widget)
+ui.SectorWidget.setLayout(SectorLayout)
+
+# Balance Sheet
+BalanceSheetLayout = QtWidgets.QVBoxLayout()
+BalanceSheetLayout.addWidget(ui.balance_sheet_widget)
+ui.BalanceSheetWidget.setLayout(BalanceSheetLayout)
+
+# Income Statement
+IncomeStatementLayout = QtWidgets.QVBoxLayout()
+IncomeStatementLayout.addWidget(ui.income_statement_widget)
+ui.IncomeStatementWidget.setLayout(IncomeStatementLayout)
+
+# Cash Flow
+CashFlowLayout = QtWidgets.QVBoxLayout()
+CashFlowLayout.addWidget(ui.cash_flow_widget)
+ui.CashFlowWidget.setLayout(CashFlowLayout)
+
+
+class SectorThread(QThread):
+    finished = pyqtSignal(str)
+    def __init__(self):
+        super().__init__() 
+    def run(self):
+        sector_df = data.get_sector()
+        colored_sector_df = data.colored_sector_df(sector_df)
+        self.finished.emit(utils.sector(colored_sector_df)[1])
+ui.sector_thread = SectorThread()
+
+
+def setSector(html):
+    ui.sector_widget.setHtml(html)
+ui.sector_thread.finished.connect(setSector)
+ui.sector_thread.start()
 
 def setMode():
     ui.checked = ui.Switch.isChecked()
@@ -68,6 +129,8 @@ def setMode():
         ui.SymbolList.addItems(stockslist)
 ui.Switch.stateChanged.connect(setMode)
 
+
+
 def symbol_clicked():
     current = ui.SymbolList.currentItem().text()
     print(current)
@@ -81,21 +144,29 @@ def symbol_clicked():
     ui.graph_thread = PlottingThread(current)
     ui.news_thread = NewsThread(current)
     ui.spatial_thread = SpatialThread(current)
-    # ui.overview_thread = OverviewThread(current)
-    # ui.balancesheet_thread = PlotBalanceSheetThread(current)
+    ui.overview_thread = OverviewThread(current)
+    ui.balancesheet_thread = PlotBalanceSheetThread(current)
+    ui.incomestatement_thread = PlotIncomeStatementThread(current)
+    ui.cashflow_thread = PlotCashFlowThread(current)
 
     ui.quote_thread.finished.connect(handle_load_quote_thread_finished)
     ui.graph_thread.finished.connect(update_graph)
     ui.news_thread.finished.connect(set_news)
     ui.spatial_thread.finished.connect(set_spatial)
-    # ui.overview_thread.finished.connect(ui.handle_load_overview_finished)
-    # ui.balancesheet_thread.finished.connect(ui.handle_load_balance_sheet_finished)
+    ui.overview_thread.finished.connect(set_overview)
+    ui.balancesheet_thread.finished.connect(set_balance_sheet)
+    ui.incomestatement_thread.finished.connect(set_income_statement)
+    ui.cashflow_thread.finished.connect(set_cash_flow)
 
     ui.quote_thread.start()
     ui.graph_thread.start()
     ui.news_thread.start()
-    ui.spatial_thread.start()
-    # ui.overview_thread.start()
+    ui.overview_thread.start()
+    ui.balancesheet_thread.start()
+    ui.incomestatement_thread.start()
+    ui.cashflow_thread.start()
+
+
 ui.SymbolList.itemClicked.connect(symbol_clicked)
 
 def add_button_clicked():
@@ -172,14 +243,14 @@ def handle_load_quote_thread_finished(quote):
 
 class News(QtWidgets.QWidget):
     def __init__(self,news):
-        headline, url, source, timestamp, tags, tickers, summary, sentiment_score, sentiment_label = news
+        headline, url, source, timestamp, summary, sentiment_score, sentiment_label = news
         self.url = url
         super().__init__()
         self.cont_layout = QtWidgets.QGridLayout(self) # Widget Layout
-        self.cont_layout.setHorizontalSpacing(25)
+        self.cont_layout.setHorizontalSpacing(13)
         self.cont_layout.setVerticalSpacing(15)
         self.Time = QtWidgets.QLabel(parent=self)
-        self.Time.setText(data.time_since(timestamp))
+        self.Time.setText(data.time_since(timestamp)+'    |')
         self.cont_layout.addWidget(self.Time, 1, 1, 1, 1)
 
         self.Headline = QtWidgets.QLabel(parent=self)
@@ -194,10 +265,7 @@ class News(QtWidgets.QWidget):
         self.cont_layout.addWidget(self.Headline, 0, 0, 1, 3)
 
         self.Source = QtWidgets.QLabel(parent=self)
-        font = QtGui.QFont()
-        font.setPointSize(8)
-        self.Source.setFont(font)
-        self.Source.setText(source)
+        self.Source.setText(source+'    |')
         self.cont_layout.addWidget(self.Source, 1, 0, 1, 1)
 
         self.SentimentLabel = QtWidgets.QLabel(parent=self)
@@ -215,24 +283,32 @@ class News(QtWidgets.QWidget):
         self.cont_layout.setColumnStretch(0, 1)
         self.cont_layout.setColumnStretch(1, 1)
         self.cont_layout.setColumnStretch(2, 11)
-        self.cont_layout.setRowStretch(0, 3)
+        self.cont_layout.setRowStretch(0, 10)
         self.cont_layout.setRowStretch(1, 2)
-        self.cont_layout.setRowStretch(2, 6)
+        self.cont_layout.setRowStretch(2, 4)
 
-    def open_url(self):
-        # Use the webbrowser module to open the URL in the default browser
+    def mousePressEvent(self, event):
         webbrowser.open(self.url)
 
 ui.NewsListWidget.setItemDelegate(QtWidgets.QStyledItemDelegate())
 def set_news(news_list):
     ui.NewsListWidget.clear()
-    for i in news_list:
-        news_obj = News(i)
-        item = QtWidgets.QListWidgetItem()
-        item_size = QtCore.QSize(250,150)  # set the height to 120 pixels
-        item.setSizeHint(item_size)
-        ui.NewsListWidget.addItem(item)
-        ui.NewsListWidget.setItemWidget(item,news_obj)
+    if len(news_list) != 0:
+        ui.NewsListWidget.setDisabled(False)
+        for i in news_list:
+            news_obj = News(i)
+            item = QtWidgets.QListWidgetItem()
+            if len(i[0]) <= 80:
+                item_size = QtCore.QSize(250,150)  # set the height to 120 pixels
+            else:
+                item_size = QtCore.QSize(250,200)
+            item.setSizeHint(item_size)
+            ui.NewsListWidget.addItem(item)
+            ui.NewsListWidget.setItemWidget(item,news_obj)
+    else:
+        ui.NewsListWidget.setDisabled(True)
+    ui.spatial_thread.start()
+    
 class NewsThread(QThread):
     finished = pyqtSignal(list)
     def __init__(self, symbol):
@@ -246,7 +322,7 @@ class NewsThread(QThread):
                 newsfeed = data.fetch_news(self.symbol,50)[0]
                 self.finished.emit(newsfeed)
             except Exception as e:
-                print(e)
+                print('No news')
                 self.finished.emit([])
         else:
             try:
@@ -254,7 +330,7 @@ class NewsThread(QThread):
                 newsfeed = data.fetch_news('CRYPTO:'+symbol,50)[0]
                 self.finished.emit(newsfeed)
             except Exception as e:
-                print(e)
+                print('No news')
                 self.finished.emit([])
 
 def set_spatial(html):
@@ -293,7 +369,7 @@ class SpatialThread(QThread):
         </head>
         <body>
             <div class="center">
-            <div class="loading-text">No Data :(</div>
+            <div class="loading-text">No data available for this symbol</div>
             </div>
         </body>
         </html>'''
@@ -325,7 +401,7 @@ class SpatialThread(QThread):
         </head>
         <body>
             <div class="center">
-            <div class="loading-text">No Data :(</div>
+            <div class="loading-text">No Data Available for this symbol</div>
             </div>
         </body>
         </html>'''
@@ -347,9 +423,76 @@ class LoadQuoteThread(QThread):
         else:
             self.finished.emit(('','','','','','','','','',''))
 
+def set_overview(dataframe):
+    try:
+        layout = ui.OverviewLayout
+        while layout.count():  # Remove each widget from the layout
+            widget = layout.takeAt(0).widget()
+            widget.deleteLater()
+        layout.setSpacing(20)
+        bold_font = QtGui.QFont()
+        bold_font.setBold(True)
+        bold_font.setPointSize(20)
+
+        normal_font = QtGui.QFont()
+        normal_font.setPointSize(12)
+
+        # iterate through the columns of the dataframe
+        if not dataframe.empty:
+            for column in dataframe.columns:
+                # add the column name as a QLabel with bold font
+                label_column = QtWidgets.QLabel(column)
+                label_column.setFont(bold_font)
+                layout.addWidget(label_column)
+
+                # add the column values as a QLabel with normal font
+                values = list(dataframe[column])
+                for value in values:
+                    label_value = QtWidgets.QLabel(str(value))  
+                    label_value.setFont(normal_font)
+                    label_value.setWordWrap(True)
+                    layout.addWidget(label_value)
+        else:
+            label = QtWidgets.QLabel("Overview not available for this symbol")
+            font = QtGui.QFont('Arial', 36)
+            font.setBold(True)
+            label.setFont(font)
+            label.setWordWrap(True)
+            label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(label)
+        
+        
+    except Exception as e:
+        print(e)
+class DataFrameWidget(QtWidgets.QWidget):
+    def __init__(self, dataframe):
+        super().__init__()
+        
+        # Set up vertical layout
+        layout = QtWidgets.QVBoxLayout()
+        self.setLayout(layout)
+        
+        # Set font for column names
+        font = QtGui.QFont()
+        font.setBold(True)
+        
+        # Add column names as labels to layout
+        for column_name in dataframe.columns:
+            label = QtWidgets.QLabel(column_name)
+            label.setFont(font)
+            layout.addWidget(label)
 class OverviewThread(QThread):
-    #TODO: Overview thread
-    pass
+    finished = pyqtSignal(pd.DataFrame)
+    def __init__(self, symbol) :
+        super().__init__()
+        self.symbol = symbol
+        self.mode = ui.mode.lower()
+    def run(self):
+        overview_df = data.load_overview(self.symbol)
+        if type(overview_df) == pd.DataFrame and not overview_df.empty:
+            self.finished.emit(overview_df)
+        else:
+            self.finished.emit(pd.DataFrame([]))
 class PlottingThread(QThread):
     finished = pyqtSignal(str)
 
@@ -387,29 +530,7 @@ class PlottingThread(QThread):
                 html = utils.plot(h,d,w,m)[1]
                 self.finished.emit(html)
             else:
-                html = '''
-                <html>
-    <head>
-        <style>
-        .center {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .loading-text {
-            font-size: 3em;
-            font-weight: bold;
-            font-family: sans-serif;
-        }
-        </style>
-    </head>
-    <body>
-        <div class="center">
-        <div class="loading-text">No Data :(</div>
-        </div>
-    </body>
-    </html>'''
+                html = nodatahtml
                 self.finished.emit(html)
         elif self.mode == 'crypto':
             h,d,w,m = self.price_history()
@@ -436,13 +557,75 @@ class PlottingThread(QThread):
     </head>
     <body>
         <div class="center">
-        <div class="loading-text">No Data :(</div>
+        <div class="loading-text">No Data Available for this symbol</div>
         </div>
     </body>
     </html>'''
                 self.finished.emit(html)
-        
 
+
+def set_balance_sheet(html):
+    ui.balance_sheet_widget.setHtml(html)
+class PlotBalanceSheetThread(QThread):
+    finished = pyqtSignal(str)
+    
+    def __init__(self,symbol):
+        super().__init__()
+        self.symbol = symbol
+        self.mode = ui.mode.lower()
+    
+    def run(self):
+        if self.mode != 'crypto':
+            crucial_bal = data.get_balance_sheet(self.symbol)
+            
+            if type(crucial_bal) == pd.DataFrame and not crucial_bal.empty:
+                html = utils.balance_sheet(crucial_bal)[1]
+                self.finished.emit(html)
+            else:
+                self.finished.emit(nodatahtml)
+        else:
+            self.finished.emit(nodatahtml)
+def set_cash_flow(html):
+    ui.cash_flow_widget.setHtml(html)
+class PlotCashFlowThread(QThread):
+    finished = pyqtSignal(str)
+    
+    def __init__(self,symbol):
+        super().__init__()
+        self.symbol = symbol
+        self.mode = ui.mode.lower()
+    
+    def run(self):
+        if self.mode != 'crypto':
+            crucial_cash = data.get_cash_flow(self.symbol)
+            if type(crucial_cash) == pd.DataFrame and not crucial_cash.empty:
+                html = utils.cash_flow(crucial_cash)[1]
+                self.finished.emit(html)
+            else:
+                self.finished.emit(nodatahtml)
+        else:
+            self.finished.emit(nodatahtml)
+
+def set_income_statement(html):
+    ui.income_statement_widget.setHtml(html)
+class PlotIncomeStatementThread(QThread):
+    finished = pyqtSignal(str)
+    
+    def __init__(self,symbol):
+        super().__init__()
+        self.symbol = symbol
+        self.mode = ui.mode.lower()
+    
+    def run(self):
+        if self.mode != 'crypto':
+            crucial_income = data.get_income_statement(self.symbol)
+            if type(crucial_income) == pd.DataFrame and not crucial_income.empty:
+                html = utils.income_statement(crucial_income)[1]
+                self.finished.emit(html)
+            else:
+                self.finished.emit(nodatahtml)
+        else:
+            self.finished.emit(nodatahtml)
 
 if __name__ == "__main__":
     ui.SymbolList.addItems(stockslist)

@@ -20,8 +20,17 @@ def store_table(dataframe, table_name):
     if dataframe is not None:
         with create_connection() as conn:
             # print('Storing data in', table_name, 'table')
-            dataframe.to_sql(table_name, conn, if_exists='replace', index=True, index_label='date')
-            return 'Stored data in {}'.format(table_name)
+            if 'timestamp' not in dataframe and 'AssetType' not in dataframe:
+                dataframe.to_sql(table_name, conn, if_exists='replace', index=True, index_label='date',chunksize=25)
+            elif 'timestamp' in dataframe:
+                dataframe.to_sql(table_name, conn, if_exists='append', index=True, index_label='timestamp',chunksize=25)
+            elif 'AssetType' in dataframe:
+                dataframe.to_sql(table_name, conn, if_exists='replace')
+            elif 'Technology' in dataframe:
+                dataframe.to_sql(table_name, conn, if_exists='replace')
+            elif 'fiscalDateEnding' in dataframe:
+                dataframe.to_sql(table_name, conn, if_exists='replace', index=True, index_label='fiscalDateEnding',chunksize=3)
+            # print('Stored data in {}'.format(table_name))
     else:
         return 'Data is None'
 
@@ -32,9 +41,12 @@ def read_table(table_name):
             query = 'SELECT * FROM "{}"'.format(table_name)
             df = pd.read_sql(query, conn)
             df = df.set_index(df.columns[0])
-            df.index = pd.to_datetime(df.index)
+            if 'price' in table_name:
+                df.index = pd.to_datetime(df.index)
+            
             return df
-    except:
+    except Exception as e:
+        # print(e)
         return '{} not found'.format(table_name)
 
 def delete_table(table_name):

@@ -3,7 +3,6 @@ import yfinance as yf
 from alpha_vantage.fundamentaldata import FundamentalData
 from alpha_vantage.timeseries import TimeSeries
 import requests
-import pandas
 from datetime import datetime
 import pandas_ta as ta
 import os
@@ -19,6 +18,7 @@ from geopy.extra.rate_limiter import RateLimiter
 
 load_dotenv()
 av_key = os.getenv('AV_API_KEY')
+finage_key = os.getenv('FINAGE_API_KEY')
 fd = FundamentalData(av_key)
 ts = TimeSeries(av_key)
 
@@ -165,7 +165,9 @@ def delete_one(path,filename,item):
             f.write(i)    
 
 def delete_all_table(symbol):
-    table_name_suffix = ['_hourly_price_history','_daily_price_history','_weekly_price_history','_monthly_price_history']
+    table_name_suffix = ['_hourly_price_history','_daily_price_history','_weekly_price_history','_monthly_price_history'
+                         ,'_news','_company_overview',
+                         '_cash_flow','_balance_sheet','_income_statement']
     for i in table_name_suffix:
         db_utils.delete_table(symbol+i)
 
@@ -224,7 +226,7 @@ def extract_news_info(news_data):
     summary = news_data['summary']
     sentiment_score = news_data['overall_sentiment_score']
     sentiment_label = news_data['overall_sentiment_label']
-    return headline, url, source, timestamp, tags, tickers, summary, sentiment_score, sentiment_label
+    return headline, url, source, timestamp, summary, sentiment_score, sentiment_label
 
 def extract_news_feed(news_feed):
     news_list = []
@@ -233,15 +235,30 @@ def extract_news_feed(news_feed):
     return news_list
 
 def fetch_news(ticker,limit=200):
-    data = news(api_key=av_key,
-                tickers=ticker,
-                limit=limit)
+    try:
+        data = db_utils.read_table(ticker+'_news')
+        data = data.reset_index()
+        data = data.reindex(columns=['headline', 'url', 'source', 'timestamp', 'summary', 'sentiment_score', 'sentiment_label'])
+        data['timestamp'] = pd.to_datetime(data['timestamp'])
+        data_list = data.values.tolist()
+        if 'not found' in data: 
+            raise Exception
+        return data_list,data
+    except Exception as e:
+        # print(e)
+        data = news(api_key=av_key,
+                    tickers=ticker,
+                    limit=limit)
     if data is not None:
         feed = extract_news_feed(data)
         try:
-            df = pd.DataFrame(feed, columns=['headline', 'url', 'source', 'timestamp', 'tags', 'tickers', 'summary', 'sentiment_score', 'sentiment_label'])
+            df = pd.DataFrame(feed, columns=['headline', 'url', 'source', 'timestamp', 'summary', 'sentiment_score', 'sentiment_label'])
+            df = df.set_index('timestamp')
+            db_utils.store_table(df,ticker+'_news')
+            print('fetch news')
             return feed,df
-        except:
+        except Exception as e:
+            print(e)
             return None
     else:
         return None
@@ -301,16 +318,17 @@ def load_overview(symbol):
     try:
         table_name = symbol+'_company_overview'
         df = db_utils.read_table(table_name)
+        if type(df) != pd.DataFrame:
+            raise Exception
         return df
     except Exception:
-        
         ov_tuple = overview(symbol)
-        if ov_tuple != 'Invalid symbol':
+        if ov_tuple != None:
             df,table_name = ov_tuple
-            db_utils.store_data(df,table_name)
+            db_utils.store_table(df,table_name)
             return df
         else:
-            return 'Overview Not Available'
+            return None
         
 def overview(symbol):
     try:
@@ -319,4 +337,99 @@ def overview(symbol):
         table_name = symbol + '_company_overview'
         return data,table_name
     except Exception as e:
-        return e
+        return None
+    
+def color_alpha(color,value):
+    old_min, old_max = abs(value).min(), abs(value).max()
+    col = []
+    for i in range(len(color)):
+        new_value = (value[i] - old_min) / (old_max - old_min) * 1
+        if color[i] == 'red':
+            col.append('rgba(255,0,0,%.2f)'%abs(new_value))
+        else:
+            col.append('rgba(0,255,0,%.2f)'%abs(new_value))
+    return col
+
+def colored_sector_df(df):
+    df['change_percentage'] = [float(i[:-1]) for i in df['change_percentage']]
+    df['cp'] = abs(df['change_percentage'])
+    df['sign'] = df['change_percentage'].apply(lambda x: '-' if x < 0 else '+')
+    df['color'] = df['sign'].apply(lambda x: 'red' if x == '-' else 'green')
+    df['color'] = color_alpha(df['color'],df['change_percentage'])
+    df['parents'] = 'all'
+    df.loc[len(df.index)] = ['all', 0, 0,'','',''] 
+    return df
+
+def get_sector():
+    try:
+        table_name = 'sectors_performance'
+        df = db_utils.read_table(table_name)
+        if 'not found' not in df:
+            return df
+        else:
+            raise Exception
+    except:
+        try:
+            url = 'https://api.finage.co.uk/market-information/us/sector-performance'
+            params = {    
+            "apikey"    :   finage_key,
+            }
+            response = requests.request("GET",url,params=params)
+            json = response.json()
+            df = pd.DataFrame(json)
+            db_utils.store_table(df,'sectors_performance')
+            return df
+        except Exception as e:
+            return None
+
+def get_balance_sheet(symbol):
+    try:
+        table_name = symbol+'_balance_sheet'
+        bal = db_utils.read_table(table_name)
+        if 'not found' not in bal:
+            return bal
+        else:
+            raise Exception
+    except:
+        try:
+            full_bal, meta = fd.get_balance_sheet_quarterly(symbol)
+            crucial_bal = full_bal[['fiscalDateEnding','totalAssets','totalLiabilities','totalShareholderEquity','reportedCurrency']]
+            db_utils.store_table(crucial_bal,symbol+'_balance_sheet')
+            return crucial_bal
+        except:
+            return None
+        
+def get_income_statement(symbol):
+    try:
+        table_name = symbol+'_income_statement'
+        income = db_utils.read_table(table_name)
+        if 'not found' not in income:
+            return income
+        else:
+            raise Exception
+    except:
+        try:
+            full_income, meta = fd.get_income_statement_quarterly(symbol)
+            crucial_income = full_income[['fiscalDateEnding','reportedCurrency','grossProfit', 'totalRevenue', 'costOfRevenue','operatingIncome','netIncome']]
+            db_utils.store_table(crucial_income,symbol+'_income_statement')
+            return crucial_income
+        except:
+            return None
+
+def get_cash_flow(symbol):
+    try:
+        table_name = symbol+'_cash_flow'
+        cash = db_utils.read_table(table_name)
+        if 'not found' not in cash:
+            return cash
+        else:
+            raise Exception
+    except:
+        try:
+            full_cash, meta = fd.get_cash_flow_quarterly(symbol)
+            crucial_cash = full_cash[['fiscalDateEnding','reportedCurrency','operatingCashflow','cashflowFromInvestment', 'cashflowFromFinancing','changeInCashAndCashEquivalents', 'netIncome']]
+            db_utils.store_table(crucial_cash,symbol+'_cash_flow')
+            return crucial_cash
+        except:
+            return None
+        

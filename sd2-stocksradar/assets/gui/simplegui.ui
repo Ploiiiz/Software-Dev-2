@@ -62,7 +62,7 @@
           <number>10</number>
          </property>
          <item>
-          <layout class="QHBoxLayout" name="SwitchandCurrency" stretch="2,1,2,7">
+          <layout class="QHBoxLayout" name="SwitchandCurrency" stretch="2,1,2,7,0">
            <property name="leftMargin">
             <number>5</number>
            </property>
@@ -138,6 +138,13 @@
               </size>
              </property>
             </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="refreshButton">
+             <property name="text">
+              <string>Refresh</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -326,7 +333,7 @@
             <enum>QTabWidget::North</enum>
            </property>
            <property name="currentIndex">
-            <number>2</number>
+            <number>3</number>
            </property>
            <property name="elideMode">
             <enum>Qt::ElideNone</enum>
@@ -667,6 +674,16 @@
                    <property name="spacing">
                     <number>6</number>
                    </property>
+                   <item>
+                    <widget class="QLabel" name="label">
+                     <property name="text">
+                      <string>TextLabel</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
                   </layout>
                  </item>
                 </layout>
