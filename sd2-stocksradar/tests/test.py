@@ -1,6 +1,7 @@
 import data, db_utils, utils
 import os
 import unittest
+import pandas as pd
 from unittest.mock import patch, mock_open
 
 class TestCheckAvailable(unittest.TestCase):
@@ -44,6 +45,29 @@ class TestCheckAvailable(unittest.TestCase):
 
         # Assert that the function behaves correctly
         self.assertEqual(result,['foo','foo','foo','foo'])
+
+    def test_daybreak(self):
+        # Define test data
+        dates = pd.to_datetime(['2022-01-01', '2022-01-03'])
+        data = {'col1': [1, 2], 'col2': [3, 4]}
+        dfd = pd.DataFrame(data=data, index=dates)
+
+        # Call the function with the test data
+        daybreaks = utils.daybreak(dfd)
+
+        # Assert the expected behavior
+        expected_daybreaks = [pd.Timestamp('2022-01-02')]
+        assert daybreaks == expected_daybreaks
+    
+    def test_hourbreak(self):
+        hours = pd.to_datetime(['2022-01-01 12:00:00', '2022-01-01 14:00:00'])
+        data = {'col1': [1, 2], 'col2': [3, 4]}
+        dfd = pd.DataFrame(data=data, index=hours)
+
+        hourbreaks = utils.hourbreak(dfd)
+
+        expected_hourbreaks = [pd.Timestamp('2022-01-01 13:00:00')]
+        assert hourbreaks == expected_hourbreaks
 
     
 
